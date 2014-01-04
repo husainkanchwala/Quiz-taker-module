@@ -1,6 +1,11 @@
 Quiz-taker-module
 =================
 
+to install dependencies run command:
+
+	npm install -d
+
+	
 module for quiz taking
 
 specifications:
