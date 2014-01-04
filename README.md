@@ -19,12 +19,17 @@ specifications:
 	----------------------------------------
 		name : Option:id
 		type : LIST
-		info : id will correspond to the number stored in Question 			LIST and it contains the option corresponding to 			that Question and the last option will be 					rudendunt one which is the solution.
-	----------------------------------------------------------------	name : QuizValue
+		info : id will correspond to the number stored in Question
+		 		LIST and it contains the option corresponding to 			
+		 		that Question and the last option will be 					
+		 		rudendunt one which is the solution.
+	----------------------------------------------------------------	
+		name : QuizValue
 		type : Global variable
 		info : contains the value alloted for the next id in Quiz:id
 	----------------------------------------------------------------
 		name : QuestionValue
 		type : Global variable
-		info : contains the value alloted for the next id in 				Option:id and Question index in Question LIST.
+		info : contains the value alloted for the next id in 				
+				Option:id and Question index in Question LIST.
 	----------------------------------------------------------------
