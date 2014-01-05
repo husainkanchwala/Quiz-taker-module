@@ -1,15 +1,44 @@
 <html>
     <body>
-        <div id="statement" style="background-color:white;float:left;width:60%">
+        <head>
+        <meta charset="utf-8"> 
+        <link href="stylesheet/signin.css" rel="stylesheet">
+        <link rel= 'stylesheet' href='bootstrap/css/bootstrap.css'  type='text/css'/>
+        </head>
+        <div class="container">
+            
+
+
+        <form  action="/quesz" role="form">
+        
+        <div class="form-group" id="statement" style="float:left;width:60%">
             <%= statement %>
         </div>
-        <div id="option" style="background-color:grey;float:left;width:40%">
+        <div class="form-group" id="option" style="float:left;width:40%">
             <% for( var i=0;i < option.length ; i++){ %>
-                </br> <input type="radio"> <%= option[i] %> </input> </br>
+                <div class="radio">
+                </br> 
+                    <label>
+                    <input class="radio" id="set" type="radio" name="opti" value = <%= option[i] %> checked> <%= option[i] %> 
+                    </label>   
+                </br>
+                </div>
             <% } %>
+
+        <div class="row" >
+            </br></br></br>
+            <button type="submit" class="btn btn-success">Success</button>
+        </div>
         </div>
         
+        
+
+        </form>
+        
+
+        </div>
     </body>
+    <script src='bootstrap/js/bootstrap.js'></script>
     <script src="http://localhost:5000/socket.io/socket.io.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
     <script>
@@ -18,7 +47,7 @@
         var socket = io.connect('http://localhost:5000');
         
         $j(function(){
-         
+
         });
     </script>
 </html>
