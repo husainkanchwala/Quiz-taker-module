@@ -17,11 +17,22 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 /*            here server lies        */
 
-app.get('/',function(req,res){
+app.get('/',function (req, res){
+	res.render('index.ejs');
+});
+
+app.get('/login',function (req,res){
 	res.render('login.ejs',{ title : "Please sign in" });
 });
 
-app.post('/validate',function(req,res){
+app.post('/signin', function (req, res){
+	var uname = req.param('uid');
+	var email = req.param('eid');
+	var passwd = req.param('passwd');
+	var xpasswd = req.param('xpasswd');
+});
+
+app.post('/validate',function (req,res){
 	var user = req.param('uid');
 	var passwd = req.param('passwd');
 	redis.hget('user',user,function(err,pass){
