@@ -3,53 +3,58 @@ var express = require('express'),http = require('http');
 var app = express();
 var server = http.createServer(app).listen(5000);
 var io = require('socket.io').listen(server);
-var k = 1;
+var path = require("path");
+var x = 0;
+var state,solv;
 /*    middlewares          */
 
 app.set('views', __dirname + '/views');
 app.engine('html', require('ejs').renderFile);
 app.use(express.bodyParser());
 app.use(app.router);
-app.use(express.static(__dirname + '/'));
+app.use(express.static(path.join(__dirname, 'public')));
+
 
 /*            here server lies        */
 
-
 app.get('/',function(req,res){
+	res.render('login.ejs');
+});
+
+
+
+
+
+
+app.get('/quesz',function(req,res){
 	console.log('/');
-	//res.render('problem.ejs',{ statement:"WHAT IS 2*2 ?" , option: ["1","2","3","4"] });
-	redis.lrange('Quiz:0',0,-1,function(err,quiz){
-		if(err) res.send('quiz not found');
-		else{
-			console.log(quiz);
-			for(var i=0; i<quiz.length;i++){
-				!function syc(i){
-					redis.lindex('Question',quiz[i],function(err,quest){
-						if(err) res.send('unable to get questions');
-						else{
-							redis.lrange('Option:'+quiz[i],0,-1,function(err,opt){
-								if(err) res.send('unable to fetch options');
-								else{
-									console.log(quest);
-									console.log(opt);
-
-									
-									res.render('problem.ejs',{ statement : quest, option : opt });	
-									if(k == 1){
-										console.log('asdadadad');
-										k++;
-									}
-								}
-							});
-
-						}
-					});
-				}(i)
+	console.log(req.param("opti"));
+	if( x >= 3 ){
+		res.render("end.ejs");
+	}else{
+		redis.lindex('Quiz:0',x,function(err,quiz){
+			if(err) res.send('quiz not found');
+			else{
+			//console.log(quiz);
+				redis.lindex('Question',quiz,function(err,quest){
+					if(err) res.send('unable to get questions ' + x);
+					else{
+						redis.lrange('Option:'+quiz,0,-1,function(err,opt){
+							if(err) res.send('unable to fetch options');
+							else{
+								
+								//console.log(quest);
+								//console.log(opt);
+								x++;
+								res.render('problem.ejs',{ statement : quest, option : opt });	
+							}
+						});
+					}
+				});
 			}
-		}
-	});
-	
-
+		});
+	}
+	//res.render('problem.ejs',{ statement:"WHAT IS 2*2 ?" , option: ["1","2","3","4"] });
 });
 
 
@@ -58,6 +63,8 @@ app.get('/',function(req,res){
 
 io.sockets.on('connection',function(socket){
 	
+
+
 	socket.on('disconnect',function(){
 		
 	});
