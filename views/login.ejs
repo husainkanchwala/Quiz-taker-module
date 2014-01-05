@@ -8,10 +8,10 @@
 	<body>
 		<div class="container">
 				<div >
-				<form class="form-signin" role="form" action="/quesz">
-					<h2 class="form-signin-heading">Please sign in</h2>
-					<input type="text" class="form-control" placeholder="username"  required autofocus>
-					<input type="password" class="form-control" placeholder="password" required >
+				<form class="form-signin" role="form" action="/validate" method="post">
+					<h2 class="form-signin-heading"> <%= title %></h2>
+					<input type="text" class="form-control" placeholder="username"  name="uid" required autofocus>
+					<input type="password" class="form-control" placeholder="password" name="passwd" required >
 					<button class="btn btn-lg btn-primary btn-block" type="submit" style="float:middle">login</button>
 				</div>
 				</form>
