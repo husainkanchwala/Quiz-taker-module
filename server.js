@@ -18,7 +18,26 @@ app.use(express.static(path.join(__dirname, 'public')));
 /*            here server lies        */
 
 app.get('/',function(req,res){
-	res.render('login.ejs');
+	res.render('login.ejs',{ title : "Please sign in" });
+});
+
+app.post('/validate',function(req,res){
+	var user = req.param('uid');
+	var passwd = req.param('passwd');
+	redis.hget('user',user,function(err,pass){
+		if(err) res.send(404);
+		else{
+			if(pass){
+				if( pass == passwd ){
+					res.redirect('/quesz');
+				}else{
+					res.render('login.ejs',{ title : "Wrong Password" });
+				}
+			}else{
+				res.render('login.ejs',{ title : "No such user name" });
+			}
+		}
+	});
 });
 
 
