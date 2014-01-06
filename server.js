@@ -18,7 +18,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 /*            here server lies        */
 
 app.get('/',function (req, res){
-	res.render('index.ejs');
+	res.render('signup.ejs');
 });
 
 app.get('/login',function (req,res){
@@ -29,7 +29,8 @@ app.post('/signin', function (req, res){
 	var uname = req.param('uid');
 	var email = req.param('eid');
 	var passwd = req.param('passwd');
-	var xpasswd = req.param('xpasswd');
+	console.log(uname+" : "+ email + " : " + passwd);
+	res.redirect('/login');
 });
 
 app.post('/validate',function (req,res){
@@ -93,6 +94,37 @@ app.get('/quesz',function(req,res){
 
 io.sockets.on('connection',function(socket){
 	
+	socket.on('newuser',function(name,pass){
+        redis.hset('user',name,pass,function(err,status){
+            if(err) throw err;
+        	    socket.emit('forward');
+            });
+        });
+
+    socket.on('check',function (name){
+    	console.log(name);
+	    redis.hget('user',name,function (err,status){
+    	    if(err) console.log("unable to access DB");
+                if(status){
+                	console.log(status);
+                	console.log("check");
+                    socket.emit('tell');
+                }
+            });
+        });
+
+    socket.on('check-email',function (email){
+    	console.log(email);
+    	redis.hvals('email', function (err, result){
+    		if(err) console.log("unable to access DB For mail");
+			for(var k=0; k < result.length; k++){
+				if( result[k] == email ){
+					console.log("check-e");
+					socket.emit('tell-email');		
+				}
+			}
+    	});
+    });
 
 
 	socket.on('disconnect',function(){
