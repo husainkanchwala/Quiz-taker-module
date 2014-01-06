@@ -7,16 +7,26 @@
 	</head>
 	<body>
 		<div class="container">
-				<div >
-				<form class="form-signin" role="form" action="/signin" method="post">
-					<h2 class="form-signin-heading"> Sign Up</h2>
-					<input type="text" class="form-control" placeholder="username"  name="uid" required autofocus>
-					<input type="email" class="form-control" placeholder="email" name="eid" required >
-					<input type="password" class="form-control" placeholder="confirm-password" name="passwd" required >
-					<input type="password" class="form-control" placeholder="confirm-password" name="xpasswd" required >
-					<button class="btn btn-lg btn-primary btn-block" type="submit" style="float:middle">login</button>
+				<div class="col-lg-6">
+						<h1> QATAP </h1>	
 				</div>
+				<div class="col-lg-6" >
+					<form role="form" class="form-sign-in" action="/login">
+							<button class="btn btn-lg btn-primary btn-block" type="submit" style="float:right;width:100px">Sign-in</button>	
+					</form>
+				</div>
+				</br></br></br></br></br></br>
+				<form class="form-signin" role="form" action="/signin" method="post" id="signup">
+					<h2 class="form-signin-heading"> Sign Up</h2>
+					<input type="text" class="form-control" placeholder="username" id="uid" name="uid" required autofocus>
+					<div id="error1"></div>
+					<input type="email" class="form-control" placeholder="email" id="eid" name="eid" required >
+					<input type="password" class="form-control" placeholder="confirm-password" id="passwd" name="passwd" required >
+					<input type="password" class="form-control" placeholder="confirm-password" id="xpasswd"name="xpasswd" required >
+					<button class="btn btn-lg btn-primary btn-block" type="button" id="siu" style="float:middle">login</button>
+					
 				</form>
+				<div id="error1"></div>
 		</div>
 	</body>
 	<script src='bootstrap/js/bootstrap.js'></script>
@@ -26,7 +36,44 @@
 		var $j = jQuery.noConflict();
         var socket = io.connect('http://localhost:5000');
         $j(function(){
+        	
+        	$j('#siu').click(function(){
+                var user = $j('#uid').val();
+                var email = $j('#eid').val();
+                var passwd = $j('#passwd').val();
+                var passwrd = $j('#xpasswd').val();
+                if( passwd === passwrd){
+                        socket.emit('newuser',user,passwd);
+                }else{
+                	$j('#passwd').val('');
+                    $j('#xpasswd').val('');
+                }
+            });
+            $j('#uid').blur(function(){
+                    var name = $j('#uid').val();
+                    socket.emit('check',name);        
+            });
+            $j('#eid').blur(function(){
+                    var email = $j('#eid').val();
+                    socket.emit('check-email',email);        
+            });
+            $j('#uid').click(function (){
+            	$j('#error1').text('');
+            });
+        	$j('#eid').click(function(){
+            	$j('#error1').text('');
+            });
 
+        });
+
+        socket.on('tell',function(val){
+            $j('#error1').text('NOT AVAILABLE USER NAME');
+        });
+        socket.on('tell-email',function(val){
+            $j('#error1').text('NOT AVAILABLE eMAIL-ID');
+        });
+	    socket.on('forward',function(){
+            $j('#signup').submit();
         });
 	</script>
 </html>
