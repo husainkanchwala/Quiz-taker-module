@@ -43,7 +43,7 @@
                 var passwd = $j('#passwd').val();
                 var passwrd = $j('#xpasswd').val();
                 if( passwd === passwrd){
-                        socket.emit('newuser',user,passwd);
+                        socket.emit('newuser',user,passwd,email);
                 }else{
                 	$j('#passwd').val('');
                     $j('#xpasswd').val('');

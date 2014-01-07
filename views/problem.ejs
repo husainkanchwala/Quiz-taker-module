@@ -9,33 +9,30 @@
             
 
 
-        <form  action="/quesz" role="form">
-        
-        <div class="form-group" id="statement" style="float:left;width:60%">
-            <%= statement %>
-        </div>
-        <div class="form-group" id="option" style="float:left;width:40%">
-            <% for( var i=0;i < option.length ; i++){ %>
-                <div class="radio">
-                </br> 
-                    <label>
-                    <input class="radio" id="set" type="radio" name="opti" value = <%= option[i] %> checked> <%= option[i] %> 
-                    </label>   
-                </br>
-                </div>
-            <% } %>
+        <form  action="/quesz"; role="form" method="post">
+            <div> WELCOME <%= title%></div>
+            <div class="form-group" id="statement" style="float:left;width:60%">
+                <%= statement %>
+            </div>
+            <input type="hidden" name="user" value = <%= title %>  method="post">
+            <input type="hidden" name="ans" value= <%= option[  option.length-1 ] %>  method="post" >                        
+            <div class="form-group" id="option" style="float:left;width:40%">
+                <% for( var i=0;i < option.length-1 ; i++){ %>
+                    <div class="radio">
+                    </br> 
+                        <label>
+                        <input class="radio" id="set" type="radio" name="opti" value = <%= option[i] %> checked> <%= option[i] %> 
+                        </label>   
+                    </br>
+                    </div>
+                <% } %>
 
-        <div class="row" >
-            </br></br></br>
-            <button type="submit" class="btn btn-success">Success</button>
-        </div>
-        </div>
-        
-        
-
+            <div class="row" >
+                </br></br></br>
+                <button type="submit" class="btn btn-success">Submit</button>
+            </div>
+            </div>
         </form>
-        
-
         </div>
     </body>
     <script src='bootstrap/js/bootstrap.js'></script>
@@ -47,7 +44,6 @@
         var socket = io.connect('http://localhost:5000');
         
         $j(function(){
-
         });
     </script>
 </html>
