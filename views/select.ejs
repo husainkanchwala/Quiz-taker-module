@@ -14,25 +14,29 @@
 				</br>
 			</div>
 			<div class="row">
-				<form role="form" class="create-form" action="/quesz" method="post">
+				<form role="form" class="create-form" action="/quizlogin" method="post">
 					<input type="hidden" name="user" value = <%= title %> >
 					<button class="btn btn-lg btn-primary btn-block" type="submit" style="float:middle">take Quiz</button>
 				</form>
-				<form role="form" class="create-form" action="/create" method="post"> 
+				<form role="form" class="create-form" action="/create" > 
 					<input type="hidden" name="user" value = <%= title %> >
 					<button class="btn btn-lg btn-primary btn-block" type="submit" style="float:middle">create Quiz</button>
+				</form>
+				<form role="form" class="create-form" action="/edit" > 
+					<input type="hidden" name="user" value = <%= title %> >
+					<button class="btn btn-lg btn-primary btn-block" type="submit" style="float:middle">edit Quiz</button>
 				</form>
 			</div>
 		</div>
 	</body>
-	<script src='bootstrap/js/bootstrap.js'></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+	<script src='bootstrap/js/bootstrap.js'></script>
 	<script src="http://localhost:5000/socket.io/socket.io.js"></script>    
 	<script>
 		var $j = jQuery.noConflict();
         var socket = io.connect('http://localhost:5000');
         $j(function(){
-
+        	
         });
 	</script>
 </html>

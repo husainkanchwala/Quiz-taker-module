@@ -1,0 +1,46 @@
+<html>
+    <body>
+        <head>
+        <meta charset="utf-8"> 
+        <link href="stylesheet/signin.css" rel="stylesheet">
+        <link rel= 'stylesheet' href='bootstrap/css/bootstrap.css'  type='text/css'/>
+        </head>
+        <div class="container">
+            <div> WELCOME <%= title%></div>
+            <form class="form-horizontal" role="form" action="/quizdetail" method="post" id="form">
+                <input type="hidden" class="form-control" name="creator" value = <%= title %> >
+                <input type="text" class="form-control" name="section" id="setion" placeholder="no. of sections">
+                <input type="text" class="form-control" name="duration" id="duration" placeholder="duration">
+                <input type="text" class="form-control" name="acttime" id="acttime" placeholder="activation time in HH:MM:SS">
+                <input type="text" class="form-control" name="actdate" id="actdate" placeholder="activation date in DD:MM:YY">
+                <input type="text" class="form-control" name="endtime" id="endtime" placeholder="end time in HH:MM:SS">
+                <input type="text" class="form-control" name="enddate" id="enddate" placeholder="end date in DD:MM:YY">
+                <input type="password" class="form-control" name="password" id="password" placeholder="password">
+                <input type="password" class="form-control" name="xpassword" id="xpassword" placeholder="confirm password">
+                <button class="btn btn-success" type="button" id="frmsub"> NEXT </button>
+            </form>
+        </div>
+    </body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src='bootstrap/js/bootstrap.js'></script>
+    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+    <script>
+        var $j = jQuery.noConflict();
+        $j(function(){
+            $j('#frmsub').click(function(){
+                if( $j('#password').val() === $j('#xpassword').val() ){
+                    $j('#form').submit();
+                } else{
+                    $j('#password').val("");
+                    $j('#xpassword').val("");
+                }
+            });
+        //     $j('#datetimepicker3').datetimepicker({
+        //       pickDate: false
+        //     });
+        //     $j('#datetimepicker4').datetimepicker({
+        //       pickTime: false
+        //     });
+        });
+    </script>
+</html>

@@ -1,0 +1,38 @@
+<html>
+    <body>
+        <head>
+        <meta charset="utf-8"> 
+        <link href="stylesheet/signin.css" rel="stylesheet">
+        <link rel= 'stylesheet' href='bootstrap/css/bootstrap.css'  type='text/css'/>
+        </head>
+        <div class="container">
+            <div> WELCOME <%= title%> YOUR ALLOCATED QUIZ ID IS <%= QID %> please remember it</div>
+            <form class="form-horizontal" role="form" action="/sectiondetail" method="post" id="form">
+                <input type="hidden" class="form-control" name="creator" value = <%= title %> >
+                <input type="hidden" class="form-control" name="Qid" value = <%= QID %> >
+                <input type="text" class="form-control" name="rank"  placeholder=" rank of sections">
+                <input type="text" class="form-control" name="metadata"  placeholder=" something about section">
+                <input type="text" class="form-control" name="name"  placeholder="name of sections">
+                <input type="text" class="form-control" name="duration" placeholder="section duration">
+                <input type="text" class="form-control" name="Qno"  placeholder="number of questions">
+                <input type="text" class="form-control" name="cutoff"  placeholder="cutoff marks if any">
+                <button class="btn btn-success" type="submit" id="frmsub"> NEXT </button>
+            </form>
+        </div>
+    </body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src='bootstrap/js/bootstrap.js'></script>
+    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+    <script>
+        var $j = jQuery.noConflict();
+        $j(function(){
+            
+        //     $j('#datetimepicker3').datetimepicker({
+        //       pickDate: false
+        //     });
+        //     $j('#datetimepicker4').datetimepicker({
+        //       pickTime: false
+        //     });
+        });
+    </script>
+</html>

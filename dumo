@@ -1,0 +1,36 @@
+redis.lindex("Quiz:"+Qid, -1,function (err, secti){
+		if(err){
+			console.log("unable to get Quiz info in showincomplete");
+			res.send(404);
+		}else{
+			redis.lrange("Saved:"+ creator + ":" + Qid, 0, -1, function (err, result){
+				if(result[1] == 0){
+					currS[idx] = result[0];
+					redis.exists("Section:"+ Qid + ":" + result[0], function (err, status){
+						if(err){
+							console.log("showincomplete section exisets part");
+							res.send(404);
+						}
+						else{
+							if(status == 0){ //show section page
+								QTS[idx] = secti;
+								redis.lindex("Section:"+ Qid + ":" + result[0],3,function (err, noq){
+									if(err){
+
+									}else{
+										QTQ[idx] = noq;
+										currQ[idx] = result[1];
+										res.render("sectiondetail.ejs",{ title : creator, QID : Qid});
+									}
+								});
+							}else{ //show first question of section
+
+							}
+						}
+					});
+				}else{
+
+				}
+			});
+		}
+	});

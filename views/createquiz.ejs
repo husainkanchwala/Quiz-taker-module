@@ -1,0 +1,71 @@
+<html>
+	<head>
+		<meta charset="utf-8"> 
+		<title> QATAP </title>
+		<link href="stylesheet/signin.css" rel="stylesheet">
+		<link rel= 'stylesheet' href='bootstrap/css/bootstrap.css'  type='text/css'/>
+	</head>
+	<body>
+		<div class="container">
+			<div>
+				<h1> WELCOME <%= title %> <h1>
+			</div>
+			<div class="row">
+				<select class="form-control" id="sel" name="sel">
+					<option value="1"> MCQ Subjective</option>
+					<option value="2"> MCQ Image</option>
+					<option value="3"> SUBJECTIVE</option>
+					<option value="4"> EQUATION</option>
+				</select>
+			</div>
+			</br>
+			</br>
+			<form action="/insert" method="post" enctype="multipart/form-data" >
+				<input type="hidden" class="form-control" name="creator" value = <%= title %> >
+				<input type="hidden" class="form-control" name="Qid" value = <%= QID %> >
+				<input type="hidden" class="form-control" name="paths" id="paths" value = "0" >
+				<input type="text" class="form-control" name="add"  placeholder="+ve marks">
+				<input type="text" class="form-control" name="sub"  placeholder="-ve marks">
+				<div class="row" id="datadynamic" >
+					<textarea class="form-control" rows="5" name="questiontt1"></textarea>
+				</div>
+				<div class="row" id="dynamic" >
+					<input type="text " class="form-control"   name="opt[]" id="opt" placeholder="solution" >
+					<input type="text" class="form-control"    name="opt[]"  id="opt" placeholder="Text input">
+					<input type="text" class="form-control "   name="opt[]" id="opt" placeholder="Text input">
+				</div>
+				<button type="button" class="btn btn-primary" id="addi">WANT TO ADD MORE OPTION</button>	
+				<button type="submit" class="btn btn-default" id="submit">SUBMIT AND ADD MORE</button>
+			</form>
+				<form action="/done">
+					<button type="submit" class="btn btn-success" id="submit">DONE ADDING QUESTION</button>
+				</form>
+			
+		</div>
+	</body>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src='bootstrap/js/bootstrap.js'></script>
+	<script src="http://localhost:5000/socket.io/socket.io.js"></script>
+	<script>
+		var $j = jQuery.noConflict();
+		var socket = io.connect('http://localhost:5000');
+        socket.on("mcq-img",function(){
+        	$j('#paths').val('1');
+        	var data = $j('<input type="file" name="questiontt2" >');
+        	$j('#datadynamic').append(data);
+        });
+        socket.on("equation",function(){
+        	
+        });
+        $j(function(){
+        	$j('#sel').on('change', function(){
+        		var data = $j('#sel').val();
+        		socket.emit('type',data);
+        	});
+        	$j('#addi').click(function(){
+        		var data = $j('<input type="text" class="form-control "  placeholder="Text input">').attr('name',"opt[]",'id',"opt");
+        		$j('#dynamic').append(data);
+        	});
+        });
+	</script>
+</html>
