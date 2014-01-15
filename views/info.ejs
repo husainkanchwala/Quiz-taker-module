@@ -1,0 +1,28 @@
+<html>
+    <body>
+        <head>
+        <meta charset="utf-8"> 
+        <link rel= 'stylesheet' href='bootstrap/css/bootstrap.css'  type='text/css'/>
+        </head>
+        <div class="container">
+        <form  action="/showquiz"; role="form" method="post">
+            <div> WELCOME <%= title%></div>
+            <input type="hidden" name="user" value = <%= title %> >
+            <input type="hidden" name="Qid" value= <%= Qid %> >    
+            <div> SECTION NAME : <%= secdetail[1]%> </div>
+            <div> THIS SECTION CONTAINS FOLLOWING NUMBER OF QUESTIONS : <%= secdetail[3]%> </div>
+            <div> YOU WILL BE PROVIDED  <%= secdetail[5]%> TIME IN HH:MM:SS FORMAT</div>
+            <button type="submit" class="btn btn-success"> NEXT </button>
+        </form>
+        </div>
+    </body>
+    <script src="jquery-1.10.2.min.js"></script>
+    <script src='bootstrap/js/bootstrap.js'></script>
+    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+    <script>
+        var $j = jQuery.noConflict();
+        //var socket = io.connect('http://localhost:5000');
+        $j(function(){
+        });
+    </script>
+</html>
