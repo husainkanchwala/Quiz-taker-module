@@ -4,15 +4,22 @@ var app = express();
 var server = http.createServer(app).listen(5000);
 var io = require('socket.io').listen(server);
 var path = require("path");
-var number = [];
+
+/*    DATA HOLDERS        */
+
 var correct = [];
-var x = 0;
-var state,solv;
+var number = [];
+
+/// input data
 var quiz = [];
 var currQ = [];
 var currS = [];
 var QTS = [];
 var QTQ = [];
+
+//// output data
+var Quizdetail = [];
+var userquizlog = [];
 
 /*    middlewares          */
 
@@ -179,15 +186,7 @@ app.get('/showincomplete',function (req, res){
 			});
 		}
 	});
-
-
-
-
-
-
-
-
-	/////////////////////
+/////////////////////
 });
 
 app.post('/quizdetail',function (req, res){
@@ -221,6 +220,7 @@ app.post('/quizdetail',function (req, res){
 			});
 		}
 	});
+
 });
 
 app.post('/sectionDetail',function (req, res){
@@ -311,18 +311,68 @@ app.post('/validatequizid',function (req,res){
 		else{
 			if(pass){
 				if( pass == passwd ){
-					res.render('info.ejs',{ title : user });
+					redis.lrange("Section:"+Qid+":0",0,7,function (err, secdetail){
+						if(err){
+							console.log("UNABLE TO GET SECTION DETAILS");
+							res.send(404);
+						}else{
+							userquizlog.push(user);
+							userquizlog.push(0);
+							userquizlog.push(0);
+							res.render("info.ejs",{ title:user, Qid:Qid, secdetail : secdetail});			
+						}
+					} );
 				}else{
 					res.render('quiztakinglogin.ejs',{ title : "Wrong Password" });
 				}
 			}else{
 				res.render('quiztakinglogin.ejs',{ title : "Wrong Quiz id" });
-			}
+			}	res.send(200);
 		}
 	});
 });
 
 
+app.post('/showquiz',function (req, res){
+	var user = req.param('user');
+	var Qid = req.param('Qid');
+	var idx = userquizlog.indexOf(user);
+	var qno = userquizlog[idx+2];
+	redis.lrange("Section:"+Qid+":"+userquizlog[idx+1],qno,qno+10,function (err, question){
+		if(err){
+
+		}else{
+
+			
+
+			var i = 4;
+			while(question[i] != "????") i++;
+			userquizlog[idx+1] = 
+			if(question[1] == "????"){
+				res.render('problem.ejs',{ title:user,Qid:Qid,text:question[0],pos:question[2],neg:question[3],options:question.slice(4,i)});
+			}else{
+
+				res.render('problem.ejs',{ title:user,Qid:Qid,text:question[0],image:question[1],pos:question[2],neg:question[3],options:question.slice(4,i)});
+			}
+		}
+	});
+	res.send(200);
+});
+
+
+// app.post("/quizinfo", function (req, res){
+// 	var Qid = req.param("Qid"), user = req.param('user');
+// 	redis.lrange('Quiz:'+ Qid, 0,-1, function (err, result){
+// 		if(err){
+
+// 		}else{
+// 			Quizdetail.push(Qid);
+// 			Quizdetail.push(result);
+			
+// 		}
+// 	});
+
+// });
 
 
 
