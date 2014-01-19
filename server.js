@@ -240,6 +240,7 @@ app.post('/sectionDetail',function (req, res){
 			console.log("UNABLE TO INSERT SECTION +" + sectionName + "DETAIL FOR USER" + creator);
 			res.send(404);
 		}else{
+			redis.rpush("Quiz:"+Qid,totalQuestions);
 			redis.lset("Saved:" + creator + ":"+ Qid , 0, currS[idx]);
 			redis.lset("Saved:" + creator + ":"+ Qid , 1, currQ[idx]);
 			res.render("createquiz.ejs", { title : creator, QID : Qid });
@@ -306,19 +307,27 @@ app.post('/validatequizid',function (req,res){
 	var user = req.param('user');
 	var Qid = req.param('Qid');
 	var passwd = req.param('passwd');
-	redis.lindex("Quiz:"+Qid,1,function (err,pass){
+	redis.lrange("Quiz:"+Qid,0,-1,function (err,qdetail){
 		if(err) res.send(404);
 		else{
-			if(pass){
-				if( pass == passwd ){
+			if(qdetail[1]){
+				if( qdetail[1] == passwd ){
 					redis.lrange("Section:"+Qid+":0",0,7,function (err, secdetail){
 						if(err){
 							console.log("UNABLE TO GET SECTION DETAILS");
 							res.send(404);
 						}else{
+							if( Quizdetail.indexOf(Qid) == -1){
+								console.log("here");
+								Quizdetail.push(Qid);
+								Quizdetail.push(qdetail.slice(9,-1));
+							}
 							userquizlog.push(user);
 							userquizlog.push(0);
 							userquizlog.push(0);
+							var init = [];
+							for(var i=0; i < secdetail[3]; i++) init[i] = "NA"; 
+							redis.rpush.apply(redis, [user+":"+Qid+":0"].concat(init));
 							res.render("info.ejs",{ title:user, Qid:Qid, secdetail : secdetail});			
 						}
 					} );
@@ -327,7 +336,7 @@ app.post('/validatequizid',function (req,res){
 				}
 			}else{
 				res.render('quiztakinglogin.ejs',{ title : "Wrong Quiz id" });
-			}	res.send(200);
+			}
 		}
 	});
 });
@@ -337,26 +346,64 @@ app.post('/showquiz',function (req, res){
 	var user = req.param('user');
 	var Qid = req.param('Qid');
 	var idx = userquizlog.indexOf(user);
-	var qno = userquizlog[idx+2];
-	redis.lrange("Section:"+Qid+":"+userquizlog[idx+1],qno,qno+10,function (err, question){
-		if(err){
-
+	var idx1 = Quizdetail.indexOf(Qid);
+	var secnum = parseInt(userquizlog[idx+1]);
+	var qno = parseInt(userquizlog[idx+2]);
+	console.log("point==1");
+	console.log(Quizdetail[idx1]);
+	if( qno == parseInt(Quizdetail[idx1+1][secnum+1]) ){
+		if( secnum == parseInt(Quizdetail[idx1+1][0]) ){
+			//quiz end()
+			console.log("point==2");
+			res.send("DONED");
 		}else{
-
-			
-
-			var i = 4;
-			while(question[i] != "????") i++;
-			userquizlog[idx+1] = 
-			if(question[1] == "????"){
-				res.render('problem.ejs',{ title:user,Qid:Qid,text:question[0],pos:question[2],neg:question[3],options:question.slice(4,i)});
-			}else{
-
-				res.render('problem.ejs',{ title:user,Qid:Qid,text:question[0],image:question[1],pos:question[2],neg:question[3],options:question.slice(4,i)});
-			}
+			console.log("point==3");
+			//section change
+			userquizlog[idx+2] = 0;
+			qno = 0;
+			userquizlog[idx+1]++;
+			secnum++;
+			redis.lrange("Section:"+Qid+":0",0,7,function (err, secdetail){
+				if(err){
+					console.log("UNABLE TO GET SECTION DETAILS");
+					res.send(404);
+				}else{
+					var init = [];
+					for(var i=0; i < secdetail[3]; i++) init[i] = "NA"; 
+					redis.rpush.apply(redis, [user+":"+Qid+":0"].concat(init));
+					res.render("info.ejs",{ title:user, Qid:Qid, secdetail : secdetail});			
+				}
+			} );
 		}
-	});
-	res.send(200);
+	}else{
+		if(qno != 0){
+			//something to save
+			console.log("point==4");
+		}
+		qno = qno*10+8;
+		console.log(qno);
+		console.log(secnum);
+		console.log("point==5");
+		redis.lrange("Section:"+Qid+":"+secnum,qno,qno+10,function (err, question){
+			if(err){
+				
+			}else{
+				console.log(question);
+				userquizlog[idx+2]++;
+				console.log(userquizlog[idx+2]);
+				var i = 4;
+				while(question[i] != "????") i++;
+				if(question[1] == "????"){
+					res.render('problem.ejs',{ title:user,Qid:Qid,text:question[0],pos:question[2],neg:question[3],option:question.slice(4,i+1)});
+				}else if(question[1][0] == '/'){
+					res.render('problem-img.ejs',{ title:user,Qid:Qid,text:question[0],image:question[1],pos:question[2],neg:question[3],option:question.slice(4,i+1)});
+				}else{
+					//reserved for equations
+				}
+			}
+		});	
+	}
+	
 });
 
 

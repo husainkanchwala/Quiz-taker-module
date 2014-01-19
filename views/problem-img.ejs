@@ -11,8 +11,9 @@
                 <div class="form-group" id="statement" style="float:left;width:60%">
                     <%= text %>
                 </div>
-                <input type="hidden" name="user" value = <%= title %>  >
-                <input type="hidden" name="Qid" value = <%= Qid %>  >
+                <img src=<%= image %>>
+                <input type="hidden" name="user" value = <%= title %> >
+                <input type="hidden" name="Qid" value = <%= Qid %> >
                 <input type="hidden" name="ans" value= <%= option[  option.length-1 ] %>   >                        
                 <div class="form-group" id="option" style="float:left;width:40%">
                     <% for( var i=0;i < option.length-1 ; i++){ %>
