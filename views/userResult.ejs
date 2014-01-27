@@ -1,0 +1,53 @@
+<html>
+    <body>
+        <head>
+        <meta charset="utf-8"> 
+        <link rel= 'stylesheet' href='bootstrap/css/bootstrap.css'  type='text/css'/>
+        </head>
+        <h1> Welcome <%= title %> your result for Quiz <%= Qid %> is as follows</h1>
+        </br>
+        </br>
+        <div class="container">
+
+            <% for( var i=0; i < table.length; i+=5 ){%>
+                <div class="col-sm-6"> SECTION NAME : <%= table[i+1] %></div>
+                <div class="col-sm-6"> SECTION SCORE: <%= table[i] %></div>
+                </br>
+                <table class="table table-hover">
+                    <tr >
+                        <td> Problem no. </td>
+                        <td> Your selection </td>
+                        <td> Correct answer </td>
+                    </tr>
+                    <% var x = table[i+2].length %>
+                    <% for( var k = 0; k < x; k++){ %>
+                        <tr class=<%= table[i+4][k] %> >
+                            <td> <%= k %> </td>
+                            <td> <%= table[i+2][k] %> </td>
+                            <td> <%= table[i+3][k] %> </td>
+                        </tr>
+
+                    <% } %>
+                </table>
+                </br>
+                </br>
+            <% } %>
+
+
+
+
+
+
+            <table class="table table-hover"></table>
+        </div>
+    </body>
+    <script src="jquery-1.10.2.min.js"></script>
+    <script src='bootstrap/js/bootstrap.js'></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var $j = jQuery.noConflict();
+        //var socket = io.connect();
+        $j(function(){
+        });
+    </script>
+</html>

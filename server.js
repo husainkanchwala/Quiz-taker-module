@@ -38,6 +38,10 @@ app.get('/',function (req, res){
 	res.render('front.ejs');
 });
 
+app.get('/test',function(req,res){
+	res.render('pick.ejs');
+});
+
 app.get('/go',function (req, res){
 	res.render('signup.ejs');
 });
@@ -407,7 +411,7 @@ app.post('/validatequizid',function (req,res){
 									}
 								} );
 							}else{
-								res.send("you have already taken the Quiz");
+								res.redirect('/eval?user='+user+'&Qid='+Qid);
 							}
 						}
 					});
@@ -507,7 +511,7 @@ app.post('/showquiz',function (req, res){
 				}else{
 					data += ans;
 					console.log(data);
-					redis.lrange("Section:"+Qid+":"+secnum,0,-1,function (err, sectiondata){
+					redis.lrange("Section:"+Qid+":"+secnum,8,-1,function (err, sectiondata){
 						if(err){
 
 						}else{
@@ -515,7 +519,7 @@ app.post('/showquiz',function (req, res){
 							for( var i = 1 ; i < data.length; i++){
 								if( data[i] == sectiondata[ ((i-1)*10) + 8 ]){
 									point += parseInt( sectiondata[ ((i-1)*10) + 2]);
-								}else{
+								}else if( data[i] != '?'){
 									point -= parseInt( sectiondata[ ((i-1)*10) + 3]);
 								}
 							}
@@ -582,7 +586,7 @@ app.post('/showquiz',function (req, res){
 				}else{
 					data += ans;
 					console.log(data);
-					redis.lrange("Section:"+Qid+":"+secnum,0,-1,function (err, sectiondata){
+					redis.lrange("Section:"+Qid+":"+secnum,8,-1,function (err, sectiondata){
 						if(err){
 
 						}else{
@@ -590,7 +594,7 @@ app.post('/showquiz',function (req, res){
 							for( var i = 1 ; i < data.length; i++){
 								if( data[i] == sectiondata[ ((i-1)*10) + 8 ]){
 									point = point + parseInt( sectiondata[ ((i-1)*10) + 2]);
-								}else{
+								}else if( data[i] != '?'){
 									point = point -  parseInt( sectiondata[ ((i-1)*10) + 3]);
 								}
 							}
@@ -601,18 +605,89 @@ app.post('/showquiz',function (req, res){
 							redis.rpush("complete:"+user+":"+Qid,1);
 							if(Quizdetail[idx1 + 2] == 0){
 								console.log("refrence count of quiz deleted");
-								
 								Quizdetail.splice(idx1,3);
 							}
+
+							res.redirect('/eval?user='+user+'&Qid='+Qid);
 						}
+
 					});
 				}
 			});
 			console.log("point==2");
-			res.send("DONED");
+			//res.send("DONED");
 		}
 	}
 	
+});
+
+/*      Quiz Assesment  */
+
+app.get('/eval',function (req, res){
+	console.log("qwertyuiopasdfghjklzxcvbnm");
+	user = req.param('user');
+	Qid = req.param('Qid');
+	redis.lindex('Quiz:'+Qid,9,function (err,totsec){
+		if(err){
+			console.log('Quiz not Exists ****');
+			res.send(404);
+		}else{
+			datauser = [];
+			var i  = 0;
+			for (i = 0; i <totsec; i++){
+				!function sync(i){
+					redis.lrange("result:"+user+":"+Qid,0 ,-1, function (err, result){
+						if(err){
+							console.log('result not Exists ****');
+							res.send("result not Exists");
+						}else{
+							
+							redis.lrange("Section:"+Qid+":"+i,0,-1,function (err, sectiondata){
+								if(err){
+									console.log('Section not Exists ****');
+									res.send(404);
+								}else{
+									datauser.push(result[2*i+1]);
+									datauser.push(sectiondata[1]);
+									var choice = [];
+									var corre = [];
+									var color = [];
+									var solu;
+									for( var k = 1 ; k < result[i].length; k++){
+										solu = sectiondata[ ((k-1)*11) + 16];
+										corre.push(sectiondata[ ((k-1)*11) + parseInt(solu) + 12 ]);
+										console.log( result[i][k] + " !!!!!!!!!!!!! 1");
+										console.log( sectiondata[ ((k-1)*11) + parseInt(solu) + 12 ] + " !!!!!!!!!!!!! 2");
+										console.log(i + " >>>>> i");
+										console.log(k + " >>>>> k");
+										if( result[i][k] === parseInt(solu)){
+											choice.push(sectiondata[ ((k-1)*11) + parseInt(solu) + 12 ]);
+											color.push("success");
+										}else if( result[i][k] != '?'){
+											choice.push(sectiondata[ ((k-1)*11) + parseInt(result[i][k]) + 12 ]);
+											color.push("danger");
+										}else{
+											choice.push("-");
+											color.push("warning");
+										}
+									}
+									datauser.push(choice);
+									datauser.push(corre);
+									datauser.push(color);
+									if( i == parseInt(totsec)-1){
+										console.log(datauser);
+										res.render('userResult.ejs',{ title:user,Qid:Qid,table:datauser});
+									}
+								}		
+							});
+
+						}
+					});
+				}(i);
+			}
+			
+		}
+	});
 });
 
 /*			  socket.io stuff		 */ 
@@ -719,6 +794,54 @@ io.sockets.on('connection',function(socket){
 	});
 });
 
+
+
+/* garbage */
+
+
+
+
+
+
+
+
+// redis.lrange("Section:"+Qid+":"+i,0,-1,function (err, sectiondata){
+// 	if(err){
+// 		console.log('Section not Exists ****');
+// 		res.send(404);
+// 	}else{
+// 		datauser.push(sectiondata[1]);
+// 		redis.lrange("result:"+user+":"+Qid,function (err,result){
+// 			if(err){
+// 				console.log('result not Exists ****');
+// 				res.send("result not Exists");
+// 			}else{
+				
+// 				for( var k = 1 ; k < result.length; k++){
+// 					var choice = [];
+// 					var corre = [];
+// 					var color = [];
+// 					var solu = sectiondata[ ((k-1)*10) + 8];
+// 					corre.push(sectiondata[ ((k-1)*10) + solu + 4 ]);
+// 					if( result[2*(k-1)][k] == solu){
+// 						choice.push(sectiondata[ ((k-1)*10) + solu + 4 ]);
+// 						color.push("success");
+// 					}else if( result[2*(k-1)][i] != '?'){
+// 						choice.push(sectiondata[ ((k-1)*10) + result[k] + 4 ]);
+// 						color.push("danger");
+// 					}else{
+// 						choice.push("-");
+// 						color.push("warning");
+// 					}
+// 					datauser.push(choice);
+// 					datauser.push(corre);
+// 					datauser.push(color);
+// 					datauser.push()
+// 				}
+// 			}
+// 		});
+// 	}
+// });
 
 
 
