@@ -1,0 +1,3 @@
+del laukik:1
+del log:laukik:1
+del result:laukik:1

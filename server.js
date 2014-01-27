@@ -1,12 +1,12 @@
 var redis = require('redis').createClient();
 var express = require('express'),http = require('http');
 var app = express();
-var server = http.createServer(app).listen(5000);
+var server = http.createServer(app).listen(5001);
 var io = require('socket.io').listen(server);
 var path = require("path");
 
 /*    DATA HOLDERS        */
-
+var load = 0;
 var correct = [];
 var number = [];
 
@@ -20,12 +20,12 @@ var QTQ = [];
 //// output data
 var Quizdetail = [];
 var userquizlog = [];
-
+var sockuser = [];
 /*    middlewares          */
 
 app.set('views', __dirname + '/views');
 app.engine('html', require('ejs').renderFile);
-app.use(express.bodyParser({ keepExtensions: true,uploadDir: __dirname + '/uploads'}))
+app.use(express.bodyParser({ keepExtensions: true,uploadDir: __dirname + '/public/uploads'}))
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -33,6 +33,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 /*            here server lies        */
 
 app.get('/',function (req, res){
+	load++;
+	console.log("5001==== "+ load);
 	res.render('signup.ejs');
 });
 
@@ -312,25 +314,99 @@ app.post('/validatequizid',function (req,res){
 		else{
 			if(qdetail[1]){
 				if( qdetail[1] == passwd ){
-					redis.lrange("Section:"+Qid+":0",0,7,function (err, secdetail){
+					redis.exists("complete:"+user+":"+Qid,function (err, stat){
 						if(err){
-							console.log("UNABLE TO GET SECTION DETAILS");
-							res.send(404);
+
 						}else{
-							if( Quizdetail.indexOf(Qid) == -1){
-								console.log("here");
-								Quizdetail.push(Qid);
-								Quizdetail.push(qdetail.slice(9,-1));
+							if(stat == 0){
+								redis.lrange("Section:"+Qid+":0",0,7,function (err, secdetail){
+									if(err){
+										console.log("UNABLE TO GET SECTION DETAILS");
+										res.send(404);
+									}else{
+										var pool = Quizdetail.indexOf(Qid); 
+										if( pool == -1){
+											console.log("here");
+											Quizdetail.push(Qid);
+											Quizdetail.push(qdetail.slice(9,qdetail.length));
+											Quizdetail.push(1);
+											console.log(Quizdetail);
+										}else{
+											//reference count of Quizdetail
+											Quizdetail[pool+2]++;
+										}
+										if( userquizlog.indexOf(user) == -1){
+											redis.exists("log:"+user+":"+Qid,function (err, stat){
+												if(err){}
+												else{
+													if(stat == 1){
+														redis.lrange("log:"+user+":"+Qid, 0, -1,function (err, log){
+															console.log("yep");
+															var qno = parseInt(log[1])-1;
+															userquizlog.push(user);
+															userquizlog.push(log[0]);
+															userquizlog.push(qno);
+															userquizlog.push(Qid);
+															userquizlog.push(log[2]);
+															userquizlog.push(log[2]);
+															userquizlog.push(log[2]);
+															console.log("dart");
+															res.redirect(307,'/showquiz?user='+ user + '&Qid=' + Qid + '&opti=###&' + '&time='+log[2]);
+															console.log("dart clurse");
+														});
+													}else{
+														userquizlog.push(user);
+														userquizlog.push(0);
+														userquizlog.push(0);
+														userquizlog.push(Qid);
+														userquizlog.push(secdetail[5]);
+														userquizlog.push(secdetail[5]);
+														userquizlog.push(secdetail[5]);
+														redis.rpush("log:"+user+":"+Qid,0,0,secdetail[5]);	
+														redis.rpush( user+":"+Qid, "^");
+														res.render("info.ejs",{ title:user, Qid:Qid, secdetail : secdetail});
+													}
+												}
+											});
+										}else{
+											// redis.exists("log:"+user+":"+Qid,function (err, stat){
+											// 	if(err){
+
+											// 	}else{
+											// 		if(stat == 0){
+											redis.lrange("log:"+user+":"+Qid,0,-1,function (err, log){
+												console.log("yep");
+												var id = userquizlog.indexOf(user);
+												var qno = parseInt(log[1]) - 1  ;
+												userquizlog[id + 1] = log[0];
+												userquizlog[id + 2] = qno;
+												userquizlog[id + 4] = log[2];
+												userquizlog[id + 5] = log[2];
+												userquizlog[id + 6] = log[2];
+												// var qno = parseInt(log[1])-1;
+												// userquizlog.push(user);
+												// userquizlog.push(log[0]);
+												// userquizlog.push(qno);
+												// userquizlog.push(Qid);
+												console.log("dart");
+												res.redirect(307,'/showquiz?user='+ user + '&Qid=' + Qid + '&opti=###&' + '&time='+userquizlog[id+6]);
+												console.log("dart clurse");
+											});
+											// 		}else{
+											// 			res.send("DONED>>>>>");
+											// 		}
+											// 	}
+											// });
+											// something went wrong with him...........
+										}
+													
+									}
+								} );
+							}else{
+								res.send("you have already taken the Quiz");
 							}
-							userquizlog.push(user);
-							userquizlog.push(0);
-							userquizlog.push(0);
-							var init = [];
-							for(var i=0; i < secdetail[3]; i++) init[i] = "NA"; 
-							redis.rpush.apply(redis, [user+":"+Qid+":0"].concat(init));
-							res.render("info.ejs",{ title:user, Qid:Qid, secdetail : secdetail});			
 						}
-					} );
+					});
 				}else{
 					res.render('quiztakinglogin.ejs',{ title : "Wrong Password" });
 				}
@@ -342,45 +418,54 @@ app.post('/validatequizid',function (req,res){
 });
 
 
+
+
+
+
 app.post('/showquiz',function (req, res){
 	var user = req.param('user');
+	console.log(user + " zzzzzzzzzzzzzzzzzzzzzzzooooooooooo");
 	var Qid = req.param('Qid');
 	var idx = userquizlog.indexOf(user);
+	console.log(idx + " zzzzzzzzzzzzzzzzzzzzzzzooooooooooo");
 	var idx1 = Quizdetail.indexOf(Qid);
 	var secnum = parseInt(userquizlog[idx+1]);
-	var qno = parseInt(userquizlog[idx+2]);
-	console.log("point==1");
-	console.log(Quizdetail[idx1]);
-	if( qno == parseInt(Quizdetail[idx1+1][secnum+1]) ){
-		if( secnum == parseInt(Quizdetail[idx1+1][0]) ){
-			//quiz end()
-			console.log("point==2");
-			res.send("DONED");
-		}else{
-			console.log("point==3");
-			//section change
-			userquizlog[idx+2] = 0;
-			qno = 0;
-			userquizlog[idx+1]++;
-			secnum++;
-			redis.lrange("Section:"+Qid+":0",0,7,function (err, secdetail){
-				if(err){
-					console.log("UNABLE TO GET SECTION DETAILS");
-					res.send(404);
-				}else{
-					var init = [];
-					for(var i=0; i < secdetail[3]; i++) init[i] = "NA"; 
-					redis.rpush.apply(redis, [user+":"+Qid+":0"].concat(init));
-					res.render("info.ejs",{ title:user, Qid:Qid, secdetail : secdetail});			
-				}
-			} );
-		}
-	}else{
+	var qno = userquizlog[idx+2];
+	console.log(qno + " zzzzzzzzzzzzzzzzzzzzzzzooooooooooo");
+	if( qno != parseInt(Quizdetail[idx1+1][secnum+1]) ){
+		var time = userquizlog[idx+5];
 		if(qno != 0){
+			var ans = req.param('opti');
+			if(!ans) ans = '?';
+			console.log(ans);
+			if(ans != "###"){
+				redis.lindex(user + ":" + Qid , secnum, function (err, data){
+					if(err){
+						console.log("ssssss=ssss");
+					}else{
+						data += ans;
+						console.log(data);
+						redis.lset(user+ ":" + Qid,secnum,data);
+					}
+				});	
+			}
 			//something to save
+			time = parseInt(req.param('time'));
+			var pass = parseInt(userquizlog[idx+5]) - parseInt(time);
+			//console.log(pass + " pass");
+			//console.log(time + " time");
+			var hit = parseInt(new Date().getTime());
+			var diff = hit - parseInt(userquizlog[idx+4]);
+			//console.log(hit + " hit");
+			//console.log(diff + " diff");
+			if( diff < pass-1111){
+				console.log( user + " cheated");
+				res.send("you cheated");
+			}
 			console.log("point==4");
 		}
-		qno = qno*10+8;
+		userquizlog[idx+6] = time;
+		qno = qno*11+8;
 		console.log(qno);
 		console.log(secnum);
 		console.log("point==5");
@@ -392,41 +477,149 @@ app.post('/showquiz',function (req, res){
 				userquizlog[idx+2]++;
 				console.log(userquizlog[idx+2]);
 				var i = 4;
-				while(question[i] != "????") i++;
+				while(question[i] != "????" && i < 8 ) i++;
 				if(question[1] == "????"){
-					res.render('problem.ejs',{ title:user,Qid:Qid,text:question[0],pos:question[2],neg:question[3],option:question.slice(4,i+1)});
+					userquizlog[idx+4] = new Date().getTime();
+					res.render('problem.ejs',{ title:user, timer:time ,Qid:Qid,text:question[0],pos:question[2],neg:question[3],option:question.slice(4,i+1)});
 				}else if(question[1][0] == '/'){
-					res.render('problem-img.ejs',{ title:user,Qid:Qid,text:question[0],image:question[1],pos:question[2],neg:question[3],option:question.slice(4,i+1)});
+					userquizlog[idx+4] = new Date().getTime();
+					res.render('problem-img.ejs',{ title:user,timer:time,Qid:Qid,text:question[0],image:question[1],pos:question[2],neg:question[3],option:question.slice(4,i+1)});
 				}else{
 					//reserved for equations
 				}
 			}
 		});	
+	}else{
+		if( secnum != parseInt(Quizdetail[idx1+1][0])-1 ){
+			console.log("point==3");
+			//section change
+			var ans = req.param('opti');
+			if(!ans) ans='?';
+			var time = req.param('time');
+			console.log(ans + "--------alpha");
+			redis.lindex(user + ":" + Qid , secnum, function (err, data){
+				if(err){
+					console.log("ssssss=ssss");
+				}else{
+					data += ans;
+					console.log(data);
+					redis.lrange("Section:"+Qid+":"+secnum,0,-1,function (err, sectiondata){
+						if(err){
+
+						}else{
+							var point = 0;
+							for( var i = 1 ; i < data.length; i++){
+								if( data[i] == sectiondata[ ((i-1)*10) + 8 ]){
+									point += parseInt( sectiondata[ ((i-1)*10) + 2]);
+								}else{
+									point -= parseInt( sectiondata[ ((i-1)*10) + 3]);
+								}
+							}
+							redis.rpush("result:"+user+":"+Qid,data,point,function (err, stack){
+								if(err){
+
+								}else{
+									redis.lset(user+":"+Qid,0,"^");
+								}
+							});
+						}
+					});
+				}
+			});
+
+			userquizlog[idx+2] = 0;
+			userquizlog[idx+1]++;
+			redis.lrange("Section:"+Qid+":"+ userquizlog[idx+1],0,7,function (err, secdetail){
+				if(err){
+					console.log("UNABLE TO GET SECTION DETAILS");
+					res.send(404);
+				}else{
+					userquizlog[idx + 4] = secdetail[5];
+					userquizlog[idx + 5] = secdetail[5];
+					userquizlog[idx + 6] = secdetail[5];
+					redis.lset("log:"+user+":"+Qid,0,userquizlog[idx + 1],function (err, rest){
+						if(err){
+
+						}else{
+							console.log(rest);
+							redis.lset("log:"+user+":"+Qid,1,userquizlog[idx + 2],function (err, rz){
+								if(err){
+
+								}else{
+									console.log(rz);
+									redis.lset("log:"+user+":"+Qid,2,secdetail[5], function (err, rx){
+										if(err){
+
+										}else{
+											console.log(rx);
+											console.log(secdetail[5] + " %%%%%%%%%%%%%%%%%%%%%%");
+											console.log(userquizlog[idx+6] + " &&&&&&&&&&&&&&&&&&&&&&");
+											res.render("info.ejs",{ title:user, Qid:Qid, secdetail : secdetail});						
+										}
+									});				
+								}
+
+							});		
+						}
+					});
+					
+					
+								
+				}
+			} );
+		}else{
+			//quiz end()
+			var ans = req.param('opti');
+			if(!ans) ans='?';
+			console.log(ans + "--------alpha");
+			redis.lindex(user + ":" + Qid ,0, function (err, data){
+				if(err){
+					console.log("ssssss=ssss");
+				}else{
+					data += ans;
+					console.log(data);
+					redis.lrange("Section:"+Qid+":"+secnum,0,-1,function (err, sectiondata){
+						if(err){
+
+						}else{
+							var point = 0;
+							for( var i = 1 ; i < data.length; i++){
+								if( data[i] == sectiondata[ ((i-1)*10) + 8 ]){
+									point = point + parseInt( sectiondata[ ((i-1)*10) + 2]);
+								}else{
+									point = point -  parseInt( sectiondata[ ((i-1)*10) + 3]);
+								}
+							}
+							redis.rpush("result:"+user+":"+Qid,data,point);
+							userquizlog.splice(idx,7);
+							Quizdetail[idx1 + 2]--;
+							redis.del("log:"+user+":"+Qid);
+							redis.rpush("complete:"+user+":"+Qid,1);
+							if(Quizdetail[idx1 + 2] == 0){
+								console.log("refrence count of quiz deleted");
+								
+								Quizdetail.splice(idx1,3);
+							}
+						}
+					});
+				}
+			});
+			console.log("point==2");
+			res.send("DONED");
+		}
 	}
 	
 });
 
-
-// app.post("/quizinfo", function (req, res){
-// 	var Qid = req.param("Qid"), user = req.param('user');
-// 	redis.lrange('Quiz:'+ Qid, 0,-1, function (err, result){
-// 		if(err){
-
-// 		}else{
-// 			Quizdetail.push(Qid);
-// 			Quizdetail.push(result);
-			
-// 		}
-// 	});
-
-// });
-
-
-
 /*			  socket.io stuff		 */ 
 
-
 io.sockets.on('connection',function(socket){
+
+	socket.on('storeme',function (user){
+		console.log(user + "###############################################");
+		sockuser.push(socket);
+		sockuser.push(user);
+	});
 	
 	socket.on('newuser',function(name,pass,email){
         redis.rpush(name,pass,email,0,0,"0:0:0", function (err, status){
@@ -465,10 +658,10 @@ io.sockets.on('connection',function(socket){
     socket.on('type',function  (data) {
     	console.log("laukik           "+ data);
     	switch(data){
-    		case "1":{
+    		case "1":
     			socket.emit("mcq");
     			break;
-    		}case "2":
+    		case "2":
     			socket.emit("mcq-img");
     			break;
     		case "3":
@@ -478,27 +671,52 @@ io.sockets.on('connection',function(socket){
     			socket.emit("equation");
     			break;
     	}
-    })
+    });
+
+    // socket.on('updateTime',function (taker,time){
+    // 	console.log( taker + ": left : " + time);
+    // 	console.log('Time Left: ' + time );
+    // 	userquizlog[userquizlog.indexOf(taker) + 4] = time;
+    // });
+	socket.on('nofault',function(user){
+		sockuser.splice(sockuser.indexOf(socket),2);
+	});
+
+    socket.on('did',function( user, Qid){
+    	console.log("heywire");
+    	var idx = userquizlog.indexOf(user);
+    	var id = Quizdetail.indexOf(Qid);
+    	userquizlog[idx+2] = Quizdetail[1+id][parseInt(userquizlog[idx+1])+1];
+    	socket.emit('end');
+    });
+
 	socket.on('disconnect',function(){
+		var z = sockuser.indexOf(socket);
+		if( z != -1){
+			var user =sockuser[sockuser.indexOf(socket)+1];
+			var id = userquizlog.indexOf(user);
+			if(id != -1){
+				var t = parseInt(new Date().getTime()) - parseInt(userquizlog[id + 4]);
+				console.log("disconnected >>>>>>>> "+ user);
+				console.log("dddddddddddddd tttttttttttttttttt is : " + t );
+				userquizlog[id+6] = parseInt(userquizlog[id+6]) - t;
+				//userquizlog[id+6] = parseInt(userquizlog[id+6]) + parseInt(t) - parseInt(userquizlog[id+4]);
+				var y = userquizlog[id+3];
+				redis.lset("log:"+user+":"+y,0,userquizlog[id+1]);
+				redis.lset("log:"+user+":"+y,1,userquizlog[id+2]);
+				redis.lset("log:"+user+":"+y,2,userquizlog[id+6]);
+				sockuser.splice(sockuser.indexOf(socket),2);	
+			}	
+		}
 		
+		
+
+		/* do storing work*/
 	});
 });
 
 
-// setInterval(function(){
-// 	for(var i=0; i<number.length; i+=2){
-// 		redis.lset(number[i],2,number[i+1],function (err ,result){
-// 			if(err) console.log("UNABLE TO Dump current Question ID");
-// 		});
-// 	}
-// 	for(var i=0; i<correct.length; i+=2){
-// 		redis.lset(correct[i],3,correct[i+1],function (err ,result){
-// 			if(err) console.log("UNABLE TO Dump correct Questions");
-// 		});
-// 	}
-// 	console.log("Dump in progress");
-// },(1000*60*3));
 
 
 
-
+//52d6c6aa500446bc2d00000b@quizzer-laukik.rhcloud.com
