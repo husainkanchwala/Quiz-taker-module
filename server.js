@@ -43,7 +43,7 @@ app.get('/go',function (req, res){
 });
 
 app.get('/login',function (req,res){
-	res.render('login.ejs',{ title : "Please sign in" });
+	res.render('login.ejs',{ title : "Please sign in",title2 : "" });
 });
 
 app.post('/signin', function (req, res){
@@ -69,10 +69,10 @@ app.post('/validate',function (req,res){
 					res.render('select.ejs',{ title : user })
 					//res.redirect(307, '/quesz?user='+user);
 				}else{
-					res.render('login.ejs',{ title : "Wrong Password" });
+					res.render('login.ejs',{ title: user, title2 : "Wrong Password" });
 				}
 			}else{
-				res.render('login.ejs',{ title : "No such user name" });
+				res.render('login.ejs',{ title: user,title2 : "No such user name" });
 			}
 		}
 	});
@@ -203,7 +203,7 @@ app.post('/quizdetail',function (req, res){
 		}else{
 
 			var creator = req.param('creator'),
-			Quizpasswd = req.param('password'),
+			Quizpasswd = req.param('password'),Quizpasswdforstud = req.param('password2'),
 			eventDate = req.param('actdate'),
 			eventTime = req.param('acttime'),
 			totalDuration = req.param('duration'),
@@ -214,7 +214,7 @@ app.post('/quizdetail',function (req, res){
 			var idx = quiz.indexOf(Qid);
 			QTS[idx] = sectionCount;
 			currS[idx] = 0;
-			redis.rpush('Quiz:'+Qid, creator, Quizpasswd, eventDate, eventTime, enddate, endtime, totalDuration, "RFU", "RFU",sectionCount, function (err, status){
+			redis.rpush('Quiz:'+Qid, creator, Quizpasswd, eventDate, eventTime, enddate, endtime, totalDuration, Quizpasswdforstud, "RFU",sectionCount, function (err, status){
 				if(err){
 					console.log("UNABLE TO INSERT QUIZ DETAILS");
 					res.send(404);
@@ -316,8 +316,8 @@ app.post('/validatequizid',function (req,res){
 	redis.lrange("Quiz:"+Qid,0,-1,function (err,qdetail){
 		if(err) res.send(404);
 		else{
-			if(qdetail[1]){
-				if( qdetail[1] == passwd ){
+			if(qdetail[7]){
+				if( qdetail[7] == passwd ){
 					redis.exists("complete:"+user+":"+Qid,function (err, stat){
 						if(err){
 

@@ -17,6 +17,8 @@
                 <input type="text" class="form-control" name="enddate" id="enddate" placeholder="end date in DD:MM:YY">
                 <input type="password" class="form-control" name="password" id="password" placeholder="password">
                 <input type="password" class="form-control" name="xpassword" id="xpassword" placeholder="confirm password">
+                <input type="password" class="form-control" name="password2" id="password2" placeholder="password for applicant">
+                <input type="password" class="form-control" name="xpassword2" id="xpassword2" placeholder="confirm password">
                 <button class="btn btn-success" type="button" id="frmsub"> NEXT </button>
             </form>
         </div>
@@ -30,7 +32,12 @@
         $j(function(){
             $j('#frmsub').click(function(){
                 if( $j('#password').val() === $j('#xpassword').val() ){
-                    $j('#form').submit();
+                    if( $j('#password2').val() === $j('#xpassword2').val() ){
+                        $j('#form').submit();
+                    }else{
+                        $j('#password2').val("");
+                        $j('#xpassword2').val("");    
+                    }
                 } else{
                     $j('#password').val("");
                     $j('#xpassword').val("");
