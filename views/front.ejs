@@ -1,0 +1,34 @@
+<html>
+	<head>
+		<meta charset="utf-8"> 
+		<title> LOG IN </title>
+		<link href="stylesheet/signin.css" rel="stylesheet">
+		<link rel= 'stylesheet' href='bootstrap/css/bootstrap.css'  type='text/css'/>
+	</head>
+	<body background="img/dark.jpg">
+		<div class="container">
+				<div class="col-lg-6">
+						<h1> TestWiz </h1>	
+				</div>
+				    </br></br></br></br></br></br></br></br></br></br></br></br></br>
+					<form role="form" class="form-sign-in " action="/go">
+                        <div class="col-lg-4"></div>
+                        <div class="col-lg-4">
+                            <button class="btn btn-lg btn-primary btn-block" type="submit" style="height:50px;width:150px">Sign-in</button>
+                        </div>
+						<div class="col-lg-4"></div>
+					</form>
+		</div>
+	</body>
+	<script src="jquery-1.10.2.min.js"></script>    
+    <script src='bootstrap/js/bootstrap.js'></script>
+	<script src="/socket.io/socket.io.js"></script>    
+	<script>
+		var $j = jQuery.noConflict();
+        var socket = io.connect();
+        $j(function(){
+
+        });
+
+	</script>
+</html>

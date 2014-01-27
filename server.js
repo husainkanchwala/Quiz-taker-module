@@ -35,6 +35,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/',function (req, res){
 	load++;
 	console.log("5001==== "+ load);
+	res.render('front.ejs');
+});
+
+app.get('/go',function (req, res){
 	res.render('signup.ejs');
 });
 
