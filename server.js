@@ -39,7 +39,7 @@ app.get('/',function (req, res){
 });
 
 app.get('/test',function(req,res){
-	res.render('pick.ejs');
+	res.render('chart.ejs');
 });
 
 app.get('/go',function (req, res){
@@ -207,14 +207,19 @@ app.post('/quizdetail',function (req, res){
 		}else{
 
 			var creator = req.param('creator'),
-			Quizpasswd = req.param('password'),Quizpasswdforstud = req.param('password2'),
-			eventDate = req.param('actdate'),
-			eventTime = req.param('acttime'),
+			Quizpasswd = req.param('password'),Quizpasswdforstud = req.param('password2');
 			totalDuration = req.param('duration'),
 			sectionCount = req.param('section'),
-			enddate = req.param('enddate'),
-			endtime = req.param('endtime');
 			quiz.push(Qid);
+			
+			var acttime = req.param('acttime');
+			var ip = acttime.indexOf(' ');
+			var eventDate = acttime.slice(0,ip);
+			var eventTime = acttime.slice(ip+1,-1);
+			var endtimex = req.param('endtime');
+			ip = endtimex.indexOf(' ');
+			var enddate = endtimex.slice(0,ip);
+			var endtime = endtimex.slice(ip+1,-1);
 			var idx = quiz.indexOf(Qid);
 			QTS[idx] = sectionCount;
 			currS[idx] = 0;
@@ -266,7 +271,8 @@ app.post('/insert',function  (req, res) {
 		full.push("????");
 	}else{
 		var str = req.files.questiontt2.path;
-		full.push(str.replace( __dirname , ''));
+		var qqq = str.replace( __dirname, '');
+		full.push(qqq.replace( 'public/', ''));
 	}
 	full.push(req.param('add'));
 	full.push(req.param('sub'));
@@ -598,17 +604,22 @@ app.post('/showquiz',function (req, res){
 									point = point -  parseInt( sectiondata[ ((i-1)*10) + 3]);
 								}
 							}
-							redis.rpush("result:"+user+":"+Qid,data,point);
-							userquizlog.splice(idx,7);
-							Quizdetail[idx1 + 2]--;
-							redis.del("log:"+user+":"+Qid);
-							redis.rpush("complete:"+user+":"+Qid,1);
-							if(Quizdetail[idx1 + 2] == 0){
-								console.log("refrence count of quiz deleted");
-								Quizdetail.splice(idx1,3);
-							}
+							redis.rpush("result:"+user+":"+Qid,data,point,function  (err,ty) {
+								if(err){}
+								else{
+									userquizlog.splice(idx,7);
+									Quizdetail[idx1 + 2]--;
+									redis.del("log:"+user+":"+Qid);
+									redis.rpush("complete:"+user+":"+Qid,1);
+									if(Quizdetail[idx1 + 2] == 0){
+										console.log("refrence count of quiz deleted");
+										Quizdetail.splice(idx1,3);
+									}
 
-							res.redirect('/eval?user='+user+'&Qid='+Qid);
+									res.redirect('/eval?user='+user+'&Qid='+Qid);
+								}
+							});
+							
 						}
 
 					});
@@ -653,23 +664,24 @@ app.get('/eval',function (req, res){
 									var corre = [];
 									var color = [];
 									var solu;
-									for( var k = 1 ; k < result[i].length; k++){
+									for( var k = 1 ; k < result[2*i].length; k++){
 										solu = sectiondata[ ((k-1)*11) + 16];
 										corre.push(sectiondata[ ((k-1)*11) + parseInt(solu) + 12 ]);
-										console.log( result[i][k] + " !!!!!!!!!!!!! 1");
+										console.log( result[2*i][k] + " !!!!!!!!!!!!! 1");
 										console.log( sectiondata[ ((k-1)*11) + parseInt(solu) + 12 ] + " !!!!!!!!!!!!! 2");
 										console.log(i + " >>>>> i");
 										console.log(k + " >>>>> k");
-										if( result[i][k] === parseInt(solu)){
+										if( result[2*i][k] == parseInt(solu)){
 											choice.push(sectiondata[ ((k-1)*11) + parseInt(solu) + 12 ]);
 											color.push("success");
-										}else if( result[i][k] != '?'){
-											choice.push(sectiondata[ ((k-1)*11) + parseInt(result[i][k]) + 12 ]);
+										}else if( result[2*i][k] != '?'){
+											choice.push(sectiondata[ ((k-1)*11) + parseInt(result[2*i][k]) + 12 ]);
 											color.push("danger");
 										}else{
 											choice.push("-");
 											color.push("warning");
 										}
+										console.log("lelelelelelelel");
 									}
 									datauser.push(choice);
 									datauser.push(corre);

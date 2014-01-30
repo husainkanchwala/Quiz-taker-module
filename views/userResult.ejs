@@ -4,12 +4,14 @@
         <meta charset="utf-8"> 
         <link rel= 'stylesheet' href='bootstrap/css/bootstrap.css'  type='text/css'/>
         </head>
+            <script src='js/Chart.min.js'></script>
+            
         <h1> Welcome <%= title %> your result for Quiz <%= Qid %> is as follows</h1>
         </br>
         </br>
         <div class="container">
-
-            <% for( var i=0; i < table.length; i+=5 ){%>
+            <% var z = 1;%>
+            <% for( var i=0,z=1; i < table.length; i+=5,z++ ){%>
                 <div class="col-sm-6"> SECTION NAME : <%= table[i+1] %></div>
                 <div class="col-sm-6"> SECTION SCORE: <%= table[i] %></div>
                 </br>
@@ -28,14 +30,13 @@
                         </tr>
 
                     <% } %>
+
                 </table>
+
                 </br>
-                </br>
+                
+                </br> 
             <% } %>
-
-
-
-
 
 
             <table class="table table-hover"></table>
@@ -51,3 +52,6 @@
         });
     </script>
 </html>
+
+
+

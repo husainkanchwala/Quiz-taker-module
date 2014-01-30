@@ -1,20 +1,30 @@
-<html>
+ <html>
     <body>
         <head>
         <meta charset="utf-8"> 
         <link href="stylesheet/signin.css" rel="stylesheet">
         <link rel= 'stylesheet' href='bootstrap/css/bootstrap.css'  type='text/css'/>
-        </head>
+         <link rel="stylesheet" type="text/css" media="screen"
+     href="bootstrap/css/bootstrap-datetimepicker.min.css">
+	</head>
         <div class="container">
             <div> WELCOME <%= title%></div>
             <form class="form-horizontal" role="form" action="/quizdetail" method="post" id="form">
                 <input type="hidden" class="form-control" name="creator" value = <%= title %> >
                 <input type="text" class="form-control" name="section" id="setion" placeholder="no. of sections">
                 <input type="text" class="form-control" name="duration" id="duration" placeholder="duration">
-                <input type="text" class="form-control" name="acttime" id="acttime" placeholder="activation time in HH:MM:SS">
-                <input type="text" class="form-control" name="actdate" id="actdate" placeholder="activation date in DD:MM:YY">
-                <input type="text" class="form-control" name="endtime" id="endtime" placeholder="end time in HH:MM:SS">
-                <input type="text" class="form-control" name="enddate" id="enddate" placeholder="end date in DD:MM:YY">
+                <!-- <input type="text" class="form-control" name="acttime" id="acttime" placeholder="activation time in HH:MM:SS">-->
+<!--   <div id="datetimepicker2" class="input-append">
+    <input type="text"></input>
+    <span class="add-on form-control">
+      <i data-time-icon="icon-time" data-date-icon="icon-calendar">
+      </i>
+    </span>
+  </div> -->				
+  <input type="text" class="form-control" name="acttime" id="acttime" placeholder="Select activation date and time" maxlength="25" size="25" onclick='javascript:NewCal('acttime','ddmmyyyy',true,12)'><a href="javascript:NewCal('acttime','ddmmyyyy',true,24)"><img src="images/cal.gif" width="16" height="16" border="0" alt="Pick a date and time"></a>
+                <!-- <input type="text" class="form-control" name="actdate" id="actdate" placeholder="activation date in DD:MM:YY"> -->
+                <input type="text" class="form-control" name="endtime" id="endtime" placeholder="Select completion date and time"maxlength="25" size="25"><a href="javascript:NewCal('endtime','ddmmyyyy',true,24)"><img src="images/cal.gif" width="16" height="16" border="0" alt="Pick a date and time"></a>
+                <!-- <input type="text" class="form-control" name="enddate" id="enddate" placeholder="end date in DD:MM:YY"> -->
                 <input type="password" class="form-control" name="password" id="password" placeholder="password">
                 <input type="password" class="form-control" name="xpassword" id="xpassword" placeholder="confirm password">
                 <input type="password" class="form-control" name="password2" id="password2" placeholder="password for applicant">
@@ -24,11 +34,19 @@
         </div>
     </body>
     <script src="jquery-1.10.2.min.js"></script>
-    <script src='bootstrap/js/bootstrap.js'></script>
+    <script src='bootstjavascript:NewCal('acttime','ddmmyyyy',true,12)rap/js/bootstrap.js'></script>
+    <script src="js/bootstrap-datetimepicker.min.js"></script>
+    <script language="javascript" type="text/javascript" src="js/datetimepicker.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
         var $j = jQuery.noConflict();
         var socket = io.connect();
+       /* $j("#acttime").click(javascript:NewCal('acttime','ddmmyyyy',true,12));*/
+        /*$j('#datetimepicker2').datetimepicker({
+      language: 'en',
+      pick12HourFormat: true,
+      pickTime: true
+    });*/
         $j(function(){
             $j('#frmsub').click(function(){
                 if( $j('#password').val() === $j('#xpassword').val() ){
@@ -51,4 +69,5 @@
         //     });
         });
     </script>
+	
 </html>
