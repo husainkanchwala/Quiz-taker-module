@@ -1,42 +1,150 @@
 <html>
 	<head>
 		<meta charset="utf-8"> 
-		<title> LOG IN </title>
+		<title> Home </title>
+		<link href="stylesheet/button.css" rel="stylesheet">
+
 		<link href="stylesheet/signin.css" rel="stylesheet">
 		<link rel= 'stylesheet' href='bootstrap/css/bootstrap.css'  type='text/css'/>
 	</head>
-	<body background="img/dark.jpg">
+	<body background="img/we.jpg" background-size="cover">
+
+		
+
+
 		<div class="container">
-				<div class="col-lg-6">
-						<h1> TestWiz </h1>	
-					<h2>Quiz and Test Assessment Platform</h2>
+		
+			<div class="row">
+				<div class="col-lg-12">
+					<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+					  <div class="navbar-header">
+					     <h3 style="color:white" >TestWiz</h3>
+					     <h7 style="color:white" >Quiz and Test Assessment Platform</h7>
+					   </div>
+					   <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+					      <form class="navbar-form navbar-right" action='/login'>
+					      		<button type="submit" class="btn navbar-btn btn-default">Enter</button>
+
+					      </form>
+					      
+					    </div>
+					  </div>
+					</nav>
 				</div>
-				    </br></br></br></br></br></br></br></br></br></br></br></br></br>
-					<form role="form" class="form-sign-in " action="/go">
-                        <div class="col-lg-4"></div>
-                        <div class="col-lg-4">
-                            <button class="btn btn-lg btn-primary btn-block" type="submit" style="height:50px;width:150px"> Enter</button>
-                        </div>
-						<div class="col-lg-4"></div>
-					</form>
-                                        <!-- <form role="form" class="form-sign-in " action="/test">
-                                            <div class="col-lg-4"></div>
-                                            <div class="col-lg-4">
-                                                <button class="btn btn-lg btn-primary btn-block" type="submit" style="height:50px;width:150px">Sign-in</button>
-                                            </div>
-                                            <div class="col-lg-4"></div>
-                                        </form> -->
+			</div>
+		</br>		</br>		</br>		</br>		</br>		</br></br></br>
+			<div class="row">
+				<div class="col-lg-2"></div>
+				<div class="col-lg-4" style="color:white" class="heading">
+					<h1> CREATE QUIZ, DEPLOY IT, GET THE RESULTS ALL OF IT WITH GREAT EASE </h1>
+
+				</div>
+				<div class="col-lg-2"></div>
+				<div class="col-lg-6 has-feedback">
+					<form class="form-signin " role="form" method="post" action="/signin" style="margin-padding: 20px">
+						<h3 class="form-signin-heading"> <%= title2 %></h3>
+						<div class="has-feedback" id="ud">
+							<input type="text" placeholder="pick a username"  name="uid" id="uid" class="form-control" style="padding:10px;margin-bottom: 10px"/>
+						</div>
+						<div class="has-feedback" id="ed">
+							<input type="text" placeholder="email-id" name="eid" id="eid" class="form-control" style="padding:10px;margin-bottom: 10px"/>
+						</div>
+						<div class="has-feedback" id="pass">
+							<input type="password" placeholder="password" class="form-control" id="passwd" name="passwd" style="padding:10px"/>
+							<input type="password" placeholder="confirm password" class="form-control" id="xpasswd" name="xpasswd" style="padding:10px"/>
+						<div>
+						<button type="submit" class=" form-control btn btn-custom" id="siu">  Enter </button>
+					</form>	
+				</div>
+			</div>
+				
+		</div>
+
+
+
+
 		</div>
 	</body>
 	<script src="jquery-1.10.2.min.js"></script>    
     <script src='bootstrap/js/bootstrap.js'></script>
 	<script src="/socket.io/socket.io.js"></script>    
-	<script>
-		var $j = jQuery.noConflict();
-        var socket = io.connect();
-        $j(function(){
+		<script>
+			var $j = jQuery.noConflict();
+	        var socket = io.connect();
+	        $j(function(){
+	        	
+	        	$j('#siu').click(function(){
+	                var user = $j('#uid').val();
+	                var email = $j('#eid').val();
+	                var passwd = $j('#passwd').val();
+	                var passwrd = $j('#xpasswd').val();
+	                if( passwd === passwrd){
+	                        socket.emit('newuser',user,passwd,email);
+	                }else{
+	                	$j('#passwd').val('');
+	                    $j('#xpasswd').val('');
+	                }
+	            });
+	            $j('#uid').blur(function(){
+	                    var name = $j('#uid').val();
+	                    socket.emit('check',name);        
+	            });
+	            $j('#eid').blur(function(){
+	                    var email = $j('#eid').val();
+	                    socket.emit('check-email',email);        
+	            });
+	            $j('#uid').click(function (){
+	            	$j('#ud').removeClass('has-error');
+	            });
+	        	$j('#eid').click(function(){
+	            	$j('#ed').removeClass('has-error ');
+	            });
 
-        });
+	        });
 
-	</script>
+	        socket.on('tell',function(val){
+	            $j('#ud').addClass('has-error');
+	        });
+	        socket.on('tell-email',function(val){
+	            $j('#ed').addClass('has-error');
+	        });
+		    socket.on('forward',function(){
+	            $j('#signup').submit();
+	        });
+		</script>
 </html>
+
+
+
+
+<!-- 
+	<nav class="navbar navbar-default" role="navigation">
+		<form class="navbar-form navbar-right form-inline" >
+			<input type="text" class="form-control-lg" placeholder="username"  name="uid" required autofocus>
+			<input type="password" class="form-control-lg" placeholder="password" name="passwd" required >
+			<button class="btn btn-lg btn-default navbar-btn" type="submit" style="float:middle">login</button>
+		</form>
+	</nav> -->
+
+
+<!--<div class="col-lg-4">
+				</div>
+				<div class="col-lg-4" style="color:white">
+						<h1>TestWiz</h1>	
+						<h2>Quiz and Test Assessment Platform</h2>
+				</div>
+				<div class="col-lg-4">
+				</div>
+				<div class="col-lg-4"></div>
+				 <div class="col-lg-4">
+					<img src="img/ad.jpg"  class="img-rounded img-responsive" alt="Responsive image" >
+				</div>
+				    </br></br></br></br></br></br></br></br></br></br></br></br></br>
+				                            <form role="form" class="form-sign-in " action="/test">
+                                            <div class="col-lg-4"></div>
+                                            <div class="col-lg-4">
+                                                <button class="btn btn-lg btn-primary btn-block" type="submit" style="height:50px;width:150px">Sign-in</button>
+                                            </div>
+                                            <div class="col-lg-4"></div>
+
+                                        </form> -->

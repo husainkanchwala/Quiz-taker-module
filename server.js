@@ -35,7 +35,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/',function (req, res){
 	load++;
 	console.log("5001==== "+ load);
-	res.render('front.ejs');
+	res.render('front.ejs',{title2:""});
 });
 
 app.get('/test',function(req,res){
@@ -717,6 +717,7 @@ io.sockets.on('connection',function(socket){
         	if(err) console.log("RPUSH FOR USER DOSEN'T WORK");
         	redis.hset("email-user",email,name,function (err, result){
         		if(err) console.log("reverse mapping FOR USER DOSEN'T WORK");
+        		console.log("uuuuuuuuu");
         		socket.emit('forward');
         	});
         });
