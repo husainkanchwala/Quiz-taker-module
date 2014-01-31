@@ -1,4 +1,8 @@
 <html>
+    <script src="jquery-1.10.2.min.js"></script>
+    <script src='bootstrap/js/bootstrap.js'></script>
+    <script src="/socket.io/socket.io.js"></script>
+    
     <body background="img/images.jpg">
         <head>
         <meta charset="utf-8"> 
@@ -10,6 +14,7 @@
         </br>
         </br>
         <div class="container">
+            
             <% var z = 1;%>
             <% for( var i=0,z=1; i < table.length; i+=5,z++ ){%>
                 <div class="col-sm-6"> SECTION NAME : <%= table[i+1] %></div>
@@ -29,7 +34,7 @@
                             <td> <%= table[i+3][k] %> </td>
                         </tr>
 
-                    <% } %>
+                    <% } %> 
 
                 </table>
 
@@ -37,14 +42,42 @@
                 
                 </br> 
             <% } %>
-
-
             <table class="table table-hover"></table>
+            <script>
+                //var $j = jQuery.noConflict();    
+                //var alp = 
+                //$j.parseJSON(<%= table %>);
+                //var alp = [<%= table %>];
+                //alert(result);
+                //var size = alp.length/5;
+                //alert(size);
+                var datax = { labels:[], datasets:[{
+                    data:[]
+
+                }] };
+                //var lab = [];
+                <% for(var t=0; t < table.length/5 ; t++){ %>
+                    datax.labels.push('<%= table[5*t + 1] %>');
+                    var c=0,w=0,u=0;
+                    <% for(var p=0; p < table[5*t+4].length/5 ; p++){ %>
+                        if( '<%= table[5*t + 1][p] %>' == "success" ){
+                            c++;
+                        }else if( '<%= table[5*t + 1][p] %>' == "warning" ){
+                            w++;
+                        }else{
+                            u++;
+                        }
+                    <% } %>
+                    datax.datasets.data.push(c);
+                    datax.datasets.data.push(w);
+                    datax.datasets.data.push(u);
+                    datax.datasets.fillColor("rgba(151,187,205,0.5");
+                    datax.datasets.strokeColor("rgba(151,187,205,1.0");
+                <% } %>
+                alert(datax);
+            </script>
         </div>
     </body>
-    <script src="jquery-1.10.2.min.js"></script>
-    <script src='bootstrap/js/bootstrap.js'></script>
-    <script src="/socket.io/socket.io.js"></script>
     <script>
         var $j = jQuery.noConflict();
         //var socket = io.connect();
