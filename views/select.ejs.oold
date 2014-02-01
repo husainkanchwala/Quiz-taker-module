@@ -10,64 +10,52 @@
 			<div class="row">
 				<div class="col-lg-12">
 					<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-						<div class="navbar-header">
-						    <h3 style="color:white" >TestWiz</h3>
-						</div>
-					  
-					  
+					  <div class="navbar-header">
+					     <h3 style="color:white" >TestWiz</h3>
+					  </div>
 					   <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-					      <form class="navbar-form navbar-right" action='/'>
-					      		<div class="btn-group">
-					      		  <button type="button" class="btn btn-inverse dropdown-toggle" data-toggle="dropdown">
-					      		    <span class="glyphicon glyphicon-user"></span> <%= title %> 
-					      		    <span class="caret"></span>
-					      		  </button>
-					      		  <ul class="dropdown-menu">
-					      		    <li><a href="#"><span class="glyphicon glyphicon-edit"></span> Change Password</a></li>
-					      		    <li><a href="#"><span class="glyphicon glyphicon-wrench"></span> Change email address</a></li>
-								  </ul>
-					      		</div>
-					      		<button type="submit" class="btn navbar-btn btn-inverse"><span class="glyphicon glyphicon-log-out"></span> logout</button>
+					      <form class="navbar-form navbar-right" action='/login'>
+					      		<button type="submit" class="btn navbar-btn btn-primary">logout</button>
 					      </form>
 					   </div>
-						
+					  </div>
 					</nav>
 				</div>
 			</div>
 			</br>
 			<div class="row col-lg-12">
+				<h1 style="color:white">WELCOME <%= title %> <h1>
 				</br>
-				</br>
-				</br>
-				</br>
-				</br>
-				</br>
-				</br>
-				</br>
-
 				</br>
 				</br>
 			</div>
 			<div class="row">
-				<div class="col-lg-4"></div>
-				<div class="col-lg-4">
+				<div class="col-lg-3">
 					<form role="form" class="create-form" action="/quizlogin" method="post">
+						<img src="img/ad.jpg" style="height:50%;width:100%;padding:10px" class="img-rounded">
 						<input type="hidden" name="user" value = <%= title %> >
-						<button class="btn btn-lg btn-inverse btn-block" type="submit" style="float:middle"><span class="glyphicon glyphicon-hand-right"></span> take Quiz</button>
-					</form>
-					<form role="form" class="create-form" action="/create" > 
-						<input type="hidden" name="user" value = <%= title %> >
-						<button class="btn btn-lg btn-inverse btn-block" type="submit" style="float:middle"><span class="glyphicon glyphicon-pencil"></span> create Quiz</button>
-					</form>
-					<form role="form" class="create-form" action="/edit" > 
-						<input type="hidden" name="user" value = <%= title %> >
-						<button class="btn btn-lg btn-inverse btn-block" type="submit" style="float:middle"><span class="glyphicon glyphicon-edit"></span>
-edit Quiz</button>
-
+						<button class="btn btn-lg btn-primary btn-block" type="submit" style="float:middle">take Quiz</button>
 					</form>
 				</div>
-				<div class="col-lg-4"></div>
+				<div class="col-lg-3">
+					
+					<form role="form" class="create-form" action="/create" > 
+						<img src="img/provide.jpg" class="img-rounded" style="height:50%;width:100%;padding:10px">
+						<input type="hidden" name="user" value = <%= title %> >
+						<button class="btn btn-lg btn-primary btn-block" type="submit" style="float:middle">create Quiz</button>
+					</form>
+					
+				</div>
+				<div class="col-lg-3">
+					<form role="form" class="create-form" action="/edit" > 
+						<img src="img/a5.jpg" class="img-rounded" style="height:50%;width:100%;padding:10px">
+						<input type="hidden" name="user" value = <%= title %> >
+						<button class="btn btn-lg btn-primary btn-block" type="submit" style="float:middle">edit Quiz</button>
+					</form>
+				</div>
 			</div>
+			
+
 		</div>
 		</br>
 		</br>
@@ -76,11 +64,6 @@ edit Quiz</button>
 		</br>
 		</br>
 		</br>
-		</br>
-		</br>
-		</br>
-		</br>
-
 		<div class="container marketing" >
 			<div class="row"  style="color:white">
 				<div class="col-lg-2">
