@@ -145,18 +145,22 @@
 	            });
 	            $j('#uid').click(function (){
 	            	$j('#ud').removeClass('has-error');
+	            	
 	            });
 	        	$j('#eid').click(function(){
 	            	$j('#ed').removeClass('has-error ');
+	            	
 	            });
 
 	        });
 
 	        socket.on('tell',function(val){
 	            $j('#ud').addClass('has-error');
+	            $j('#uid').val('');
 	        });
 	        socket.on('tell-email',function(val){
 	            $j('#ed').addClass('has-error');
+	            $j('#eid').val('');
 	        });
 		    socket.on('forward',function(){
 	            $j('#signup').submit();
