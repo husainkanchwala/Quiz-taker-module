@@ -82,6 +82,10 @@ app.post('/validate',function (req,res){
 	});
 });
 
+app.get('/cpasswd',function (req,res){
+	res.render('cpasswd.ejs', { user : req.param('user')});
+});
+
 app.get("/create",function (req,res){
 	var user = req.param('user');
 	res.render('predetailofquiz.ejs', {title : user});
@@ -781,6 +785,19 @@ io.sockets.on('connection',function(socket){
     	userquizlog[idx+2] = Quizdetail[1+id][parseInt(userquizlog[idx+1])+1];
     	socket.emit('end');
     });
+    	socket.on('verify-pass',function (user,pass,newpass){
+		redis.lindex(user,0,function (err, passwd){
+			if(err) console.log("bush")
+			else{
+				if(pass == passwd){
+					redis.lset(user,0,newpass);
+					socket.emit("change");
+				}
+				else socket.emit("err");
+			}
+		});
+	});
+
 
 	socket.on('disconnect',function(){
 		var z = sockuser.indexOf(socket);
