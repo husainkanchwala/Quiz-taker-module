@@ -70,7 +70,7 @@ app.post('/validate',function (req,res){
 					number.push(0);
 					correct.push(user);
 					correct.push(0);
-					res.render('select.ejs',{ title : user })
+					res.render('select.ejs',{ title : user });
 					//res.redirect(307, '/quesz?user='+user);
 				}else{
 					res.render('login.ejs',{ title: user, title2 : "Wrong Password" });
@@ -92,35 +92,48 @@ app.get("/create",function (req,res){
 });
 
 app.get('/edit', function (req, res) {
-	var creator = req.param('user');
-	
-	redis.get('QuizValue',function  (err, result) {
+	var user = req.param('user');
+	redis.keys("Saved:"+user+":*",function (err,result){
 		if(err){
-			console.log("NO QUIZ EXIST");
 			res.send(404);
+			console.log("error fetching DB");
 		}else{
-			var arr = [], len = result;		
-			for( var i=0; i< len ; i++){
-				!function syn(i){
-					redis.lindex("Quiz:"+ i, 0, function (err, status){
-						if(err){
-							console.log("NO QUIZ ID EXIST");
-							res.send(404);
-
-						}else{
-							console.log("QQQQQQQ :: "+ status );
-							if( status === creator ) arr.push(i);
-							if( i == len-1){
-								console.log(arr);
-								console.log("folks");
-								res.render("quizList.ejs", { title : creator, list : arr});			
-							}
-						}
-					});
-				}(i)
+			var arr = [], len = result.length, gap = user.length + 7;		
+			for( var i=0; i < len ; i++){
+				arr.push(result[i].slice(gap));
 			}
+			console.log(arr + "--------------");
+			console.log(arr.length + "-----------------len");
+			res.render("quizList.ejs", { title : user, list : arr});
 		}
 	});
+	// redis.get('QuizValue',function  (err, result) {
+	// 	if(err){
+	// 		console.log("NO QUIZ EXIST");
+	// 		res.send(404);
+	// 	}else{
+	// 		var arr = [], len = result;		
+	// 		for( var i=0; i< len ; i++){
+	// 			!function syn(i){
+	// 				redis.lindex("Quiz:"+ i, 0, function (err, status){
+	// 					if(err){
+	// 						console.log("NO QUIZ ID EXIST");
+	// 						res.send(404);
+
+	// 					}else{
+	// 						console.log("QQQQQQQ :: "+ status );
+	// 						if( status === creator ) arr.push(i);
+	// 						if( i == len-1){
+	// 							console.log(arr);
+	// 							console.log("folks");
+	// 							res.render("quizList.ejs", { title : creator, list : arr});			
+	// 						}
+	// 					}
+	// 				});
+	// 			}(i)
+	// 		}
+	// 	}
+	// });
 });
 
 app.get('/showincomplete',function (req, res){
@@ -304,7 +317,7 @@ app.post('/insert',function  (req, res) {
 				currS[idx]++;
 				if( currS[idx] == QTS[idx]){
 					redis.del('Saved:'+creator+":"+Qid);
-					res.send("DONE>>>>>>>>>>>>>>>>>");
+					res.render('select.ejs',{ title : creator })
 				}else{
 					console.log("its here 13");
 					res.render("sectiondetail.ejs",{ title : creator, QID : Qid});
