@@ -248,7 +248,10 @@ app.post('/sectionDetail',function (req, res){
 	sectionName = req.param('name'),
 	rulesBlog = req.param('rules'),
 	sectionCutoff = req.param('cutoff'),
-	sectionDuration = req.param('duration'),
+	sectiondd = parseInt(req.param('duration-days'))*24*60*60,
+	sectionhh = parseInt(req.param('duration-hours'))*60*60,
+	sectionmm = parseInt(req.param('duration-minutes'))*60,
+	sectionDuration = ( sectiondd + sectionhh + sectionmm   )*1000,
 	creator = req.param('creator'),
 	totalQuestions = req.param('Qno');
 	var idx = quiz.indexOf(Qid);
@@ -751,24 +754,7 @@ io.sockets.on('connection',function(socket){
 			}
     	});
     });
-    socket.on('type',function  (data) {
-    	console.log("laukik           "+ data);
-    	switch(data){
-    		case "1":
-    			socket.emit("mcq");
-    			break;
-    		case "2":
-    			socket.emit("mcq-img");
-    			break;
-    		case "3":
-    			socket.emit("subjctive");
-    			break;
-    		case "4":
-    			socket.emit("equation");
-    			break;
-    	}
-    });
-
+    
     // socket.on('updateTime',function (taker,time){
     // 	console.log( taker + ": left : " + time);
     // 	console.log('Time Left: ' + time );
