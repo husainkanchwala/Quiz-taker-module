@@ -14,7 +14,7 @@
                             <h3 style="color:white" >TestWiz</h3>
                         </div>
                        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                          <form class="navbar-form navbar-right" action='/'>
+                          <form class="navbar-form navbar-right" action='/logout'>
                                 <div class="btn-group">
                                   <button type="button" class="btn btn-inverse dropdown-toggle" data-toggle="dropdown">
                                     <span class="glyphicon glyphicon-user"></span> <%= title %> 
@@ -54,10 +54,7 @@
             <div class="row">
                 <div class="col-lg-12">
                     <form action="/insert" method="post" enctype="multipart/form-data" >
-                        <input type="hidden" class="form-control" name="creator" value = <%= title %> >
-                        <input type="hidden" class="form-control" name="Qid" value = <%= QID %> >
                         <input type="hidden" class="form-control" name="paths" id="paths" value = "0" >
-                        
                         <div class="col-lg-8">
                             <div class="row">
                                 <textarea class="form-control" rows="5" name="questiontt1" style="height:302px;width:100%" >
@@ -153,6 +150,7 @@
         </div>
     </body>
     <script src="jquery-1.10.2.min.js"></script>
+    <script src="jquery.cookie.js"></script>
     <script src='bootstrap/js/bootstrap.js'></script>
     <script src="js/bootstrap-datetimepicker.min.js"></script>
     <script language="javascript" type="text/javascript" src="js/datetimepicker.js"></script>
@@ -173,7 +171,7 @@
         }
         
         $j(function(){
-
+            //$j.cookie('refresh','0');
             $j('#mcq').click(function(e){
 
             });

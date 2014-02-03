@@ -13,10 +13,8 @@
 						<div class="navbar-header">
 						    <h3 style="color:white" >TestWiz</h3>
 						</div>
-					  
-					  
 					   <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-					      <form class="navbar-form navbar-right" action='/'>
+					      <form class="navbar-form navbar-right" action='/logout'>
 					      		<div class="btn-group">
 					      		  <button type="button" class="btn btn-inverse dropdown-toggle" data-toggle="dropdown">
 					      		    <span class="glyphicon glyphicon-user"></span> <%= title %> 
@@ -56,15 +54,21 @@
 						<button class="btn btn-lg btn-inverse btn-block" type="submit" style="float:middle"><span class="glyphicon glyphicon-hand-right"></span> take Quiz</button>
 					</form>
 					<form role="form" class="create-form" action="/create" > 
-						<input type="hidden" name="user" value = <%= title %> >
 						<button class="btn btn-lg btn-inverse btn-block" type="submit" style="float:middle"><span class="glyphicon glyphicon-pencil"></span> create Quiz</button>
 					</form>
-					<form role="form" class="create-form" action="/edit" > 
+					<form role="form" class="create-form" action="/edit-complete" > 
 						<input type="hidden" name="user" value = <%= title %> >
-						<button class="btn btn-lg btn-inverse btn-block" type="submit" style="float:middle"><span class="glyphicon glyphicon-edit"></span>
-edit Quiz</button>
-
+						<button class="btn btn-lg btn-inverse btn-block" type="submit" style="float:middle">
+							<span class="glyphicon glyphicon-edit"></span>complete Quiz
+						</button>
 					</form>
+					<form role="form" class="create-form" action="/edit-edit" method='post' > 
+						<input type="hidden" name="user" value = <%= title %> >
+						<button class="btn btn-lg btn-inverse btn-block" type="submit" style="float:middle">
+							<span class="glyphicon glyphicon-edit"></span>edit Quiz
+						</button>
+					</form>
+
 				</div>
 				<div class="col-lg-4"></div>
 			</div>
