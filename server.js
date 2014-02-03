@@ -3,6 +3,17 @@ var express = require('express'),http = require('http');
 var app = express();
 var server = http.createServer(app).listen(5001);
 var io = require('socket.io').listen(server);
+io.enable('browser client minification');  // send minified client
+io.enable('browser client etag');          // apply etag caching logic based on version number
+io.enable('browser client gzip');          // gzip the file
+io.set('log level', 1);                    // reduce logging
+io.set('transports', [                     // enable all transports (optional if you want flashsocket)
+    'websocket'
+  , 'flashsocket'
+  , 'htmlfile'
+  , 'xhr-polling'
+  , 'jsonp-polling'
+]);
 var path = require("path");
 var crypto = require('crypto');
 /*    DATA HOLDERS        */
@@ -29,6 +40,7 @@ var sockuser = [];
 /*    middlewares          */
 
 app.set('views', __dirname + '/views');
+app.use(express.compress());
 app.engine('html', require('ejs').renderFile);
 app.use(express.bodyParser({ keepExtensions: true,uploadDir: __dirname + '/public/uploads'}));
 app.use(express.cookieParser());

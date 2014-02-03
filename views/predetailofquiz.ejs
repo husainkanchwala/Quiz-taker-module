@@ -1,11 +1,10 @@
  <html>
-    <body background="img/bb.jpg">
         <head>
-        <meta charset="utf-8"> 
-        <link href="stylesheet/signin.css" rel="stylesheet">
-        <link rel= 'stylesheet' href='bootstrap/css/bootstrap.css'  type='text/css'/> 
-         <link rel="stylesheet" type="text/css" media="screen" href="bootstrap/css/bootstrap-datetimepicker.min.css">
-	</head>
+            <meta charset="utf-8"> 
+            <link rel= 'stylesheet' href='bootstrap/css/bootstrap.min.css'  type='text/css'/> 
+            <script src='alldt.js'></script>
+        </head>
+    <body background="img/bb.jpg">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
@@ -34,6 +33,7 @@
             </div>
             </br>
             </br>
+            </br></br></br>
             </br>
             </br>
             <div class="row">
@@ -136,16 +136,8 @@
             </div>
         </div>
     </body>
-    <script src="jquery-1.10.2.min.js"></script>
-    <script src='bootstrap/js/bootstrap.js'></script>
-    <script src="js/bootstrap-datetimepicker.min.js"></script>
-    <script language="javascript" type="text/javascript" src="js/datetimepicker.js"></script>
-    <script src='js/rot.js'></script>
-
-    <script src="/socket.io/socket.io.js"></script>
     <script>
         var $j = jQuery.noConflict();
-        var socket = io.connect();
         var rotation = function (ele){
            $j(ele).rotate({
               angle:0, 
