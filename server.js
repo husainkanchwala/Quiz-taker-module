@@ -133,10 +133,8 @@ app.get("/create",function (req,res){
 		if(err){}
 		else{
 			var cook = req.cookies.user;
-			console.log(cook + " wwwwwwwwwwwwww");
 			var user = decrypt(cook,key);
 			if( name == user){
-				console.log(user + " cookies op");
 				res.render('predetailofquiz.ejs', {title : user});
 			}else{
 				res.send(404);
@@ -163,7 +161,6 @@ app.post('/edit-edit',function (req, res){
 								console.log(i);
 							}
 							if( i == Qc - 1 ){
-								console.log('arr +++++ '+ arr);
 								res.render("userquizlist.ejs",{ title:user, list:arr});	
 							}			
 						}
@@ -402,7 +399,8 @@ app.post('/sectionDetail',function (req, res){
 });
 
 app.post('/insert',function  (req, res) {
-	if(!req.cookies.refresh){
+	res.clearCookie('refresh');
+	if(req.cookies.a){
 		var name = req.cookies.uname;
 		var Qid = req.cookies.Qid;
 		redis.lindex(name,5,function (err, key){
@@ -440,13 +438,16 @@ app.post('/insert',function  (req, res) {
 								currS[idx]++;
 								if( currS[idx] == QTS[idx]){
 									redis.del('Saved:'+creator+":"+Qid);
+									res.clearCookie('a');
 									res.render('select.ejs',{ title : creator })
 								}else{
+									res.clearCookie('a');
 									res.render("sectiondetail.ejs",{ title : creator, QID : Qid});
 								}
 							}else{
+								res.clearCookie('a');
 								res.render("createquiz.ejs", { title : creator, QID : Qid });
-							}				
+							}
 				}else{
 					res.send(404);
 				}
@@ -460,7 +461,6 @@ app.post('/insert',function  (req, res) {
 			else{
 				var creator = decrypt(req.cookies.user,key);
 				if( creator == name){
-					res.clearCookie('refresh');
 					var idx = quiz.indexOf(Qid);
 					if( currQ[idx] == QTQ[idx] ){
 						if(currS[idx] == QTS[idx]) res.render('select.ejs',{ title : creator });
@@ -523,6 +523,7 @@ app.post('/validatequizid',function (req,res){
 														redis.lrange("log:"+user+":"+Qid, 0, -1,function (err, log){
 															console.log("yep");
 															var qno = parseInt(log[1])-1;
+															if(qno < 0) qno = 0;
 															userquizlog.push(user);
 															userquizlog.push(log[0]);
 															userquizlog.push(qno);
@@ -557,7 +558,8 @@ app.post('/validatequizid',function (req,res){
 											redis.lrange("log:"+user+":"+Qid,0,-1,function (err, log){
 												console.log("yep");
 												var id = userquizlog.indexOf(user);
-												var qno = parseInt(log[1]) - 1  ;
+												var qno = parseInt(log[1]) - 1;
+												if(qno < 0) qno = 0;
 												userquizlog[id + 1] = log[0];
 												userquizlog[id + 2] = qno;
 												userquizlog[id + 4] = log[2];
@@ -612,6 +614,7 @@ app.post('/showquiz',function (req, res){
 	var secnum = parseInt(userquizlog[idx+1]);
 	var qno = userquizlog[idx+2];
 	console.log(qno + " zzzzzzzzzzzzzzzzzzzzzzzooooooooooo");
+	console.log(Quizdetail);
 	if( qno != parseInt(Quizdetail[idx1+1][secnum+1]) ){
 		var time = userquizlog[idx+5];
 		if(qno != 0){
@@ -619,28 +622,31 @@ app.post('/showquiz',function (req, res){
 			if(!ans) ans = '?';
 			console.log(ans);
 			if(ans != "###"){
-				redis.lindex(user + ":" + Qid , secnum, function (err, data){
+				redis.lindex(user + ":" + Qid , 0, function (err, data){
 					if(err){
 						console.log("ssssss=ssss");
 					}else{
 						data += ans;
 						console.log(data);
-						redis.lset(user+ ":" + Qid,secnum,data);
+						redis.lset(user+ ":" + Qid,0,data);
 					}
 				});	
 			}
 			//something to save
 			time = parseInt(req.param('time'));
 			var pass = parseInt(userquizlog[idx+5]) - parseInt(time);
-			//console.log(pass + " pass");
-			//console.log(time + " time");
+			console.log(pass + " pass");
+			console.log(time + " time");
 			var hit = parseInt(new Date().getTime());
 			var diff = hit - parseInt(userquizlog[idx+4]);
-			//console.log(hit + " hit");
-			//console.log(diff + " diff");
+			console.log(parseInt(userquizlog[idx+4]));
+			console.log(hit + " hit");
+			console.log(diff + " diff");
 			if( diff < pass-1111){
 				console.log( user + " cheated");
 				res.send("you cheated");
+			}else{
+				userquizlog[idx+5] = time;
 			}
 			console.log("point==4");
 		}
@@ -658,6 +664,7 @@ app.post('/showquiz',function (req, res){
 				console.log(userquizlog[idx+2]);
 				var i = 4;
 				while(question[i] != "????" && i < 8 ) i++;
+				console.log("what");
 				if(question[1] == "????"){
 					userquizlog[idx+4] = new Date().getTime();
 					res.render('problem.ejs',{ title:user, timer:time ,Qid:Qid,text:question[0],pos:question[2],neg:question[3],option:question.slice(4,i+1)});

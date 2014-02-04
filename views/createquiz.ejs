@@ -168,7 +168,10 @@
         }
         
         $j(function(){
-            //$j.cookie('refresh','0');
+            $j.cookie('refresh','0');
+            $j('#submit').click(function(){
+                $j.cookie('a','a');
+            });
             $j('#mcq').click(function(e){
 
             });

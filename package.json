@@ -3,8 +3,8 @@
 	"type" : "module",
 	"version" : "0.0.0",
 	"dependencies" : {
-		"express" : "3.0.0",
-		"socket.io" : "0.9.16",
+		"express" : "3.4.4",
+		"socket.io" : "0.9",
 		"redis" : "*",
 		"ejs" : "*"
 	}
