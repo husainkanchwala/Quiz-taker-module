@@ -1,7 +1,7 @@
 var redis = require('redis').createClient();
 var express = require('express'),http = require('http');
 var app = express();
-var server = http.createServer(app).listen(5001);
+var server = http.createServer(app).listen(5002);
 var io = require('socket.io').listen(server);
 io.enable('browser client minification');  // send minified client
 io.enable('browser client etag');          // apply etag caching logic based on version number
@@ -51,23 +51,36 @@ app.use(express.static(path.join(__dirname, 'public')));
 /*        encryption functions  */
 
 function encrypt(text,key){
-  var cipher = crypto.createCipher('aes-256-cbc',key)
-  var crypted = cipher.update(text,'utf8','hex')
-  crypted += cipher.final('hex');
-  return crypted;
+	try{
+		var cipher = crypto.createCipher('aes-256-cbc',key)
+		var crypted = cipher.update(text,'utf8','hex')
+		crypted += cipher.final('hex');
+		return crypted;		
+	}catch(ex){
+		return "?";
+	}
+  
 }
  
 function decrypt(text,key){
-  var decipher = crypto.createDecipher('aes-256-cbc',key)
-  var dec = decipher.update(text,'hex','utf8')
-  dec += decipher.final('utf8');
-  return dec;
+	try{
+		var decipher = crypto.createDecipher('aes-256-cbc',key);
+		var dec = decipher.update(text,'hex','utf8')
+		dec += decipher.final('utf8');
+		return dec;
+	}catch(ex){
+		console.log('exception raised  : ' + ex);
+		return "?";
+	}
+  
+
 }
 
 
 /*            here server lies        */
 
 app.get('/',function (req, res){
+	console.log("5002");
 	res.render('front.ejs',{title2:""});
 });
 
@@ -197,18 +210,18 @@ app.get('/edit-complete', function (req, res) {
 
 app.get('/showincomplete',function (req, res){
 	var creator = req.param('creator'), Qid = req.param('choice');
-	quiz.push(Qid);
-	var idx = quiz.indexOf(Qid);
+	//quiz.push(Qid);
+	//var idx = quiz.indexOf(Qid);
 	console.log(Qid);
 	console.log("alpha");
+	res.cookie('Qid',Qid);
 	///////////////////////////
-
 	redis.lrange("Saved:"+ creator + ":" + Qid,0,-1,function (err, result){
 		if(err){
 			console.log("UNABLE TO RETRIVE SAVED FOR "+ Qid);
 			res.send(404);
 		}else{
-			redis.lindex("Quiz:"+Qid, -1,function (err, section){
+			redis.lindex("Quiz:"+Qid, 9,function (err, section){
 				if(err){
 					console.log("unable to get Quiz info in showincomplete");
 					res.send(404);
@@ -221,9 +234,11 @@ app.get('/showincomplete',function (req, res){
 							}
 							else{
 								if(status == 0){
-									QTS[idx] = section;
-									currS[idx] = parseInt(result[0]);
-									currQ[idx] = parseInt(result[1]);
+									res.cookie('QTS',section);
+									//QTS[idx] = section;
+									res.cookie('CS',parseInt(result[0]));
+									res.cookie('CQ',parseInt(result[1]));
+									//currQ[idx] = parseInt(result[1]);
 									res.render("sectiondetail.ejs",{ title : creator, QID : Qid});
 								}else{
 									redis.lindex("Section:"+Qid+":0",3,function (err, totalQinS){
@@ -231,10 +246,14 @@ app.get('/showincomplete',function (req, res){
 											console.log("UNABLE TO RETRIVE SEction FOR "+ Qid);
 											res.send(404);
 										}else{
-											QTQ[idx] = totalQinS;
-											QTS[idx] = section;
-											currS[idx] = parseInt(result[0]);
-											currQ[idx] = parseInt(result[1]);
+											//QTQ[idx] = totalQinS;
+											//QTS[idx] = section;
+											res.cookie('QTQ',totalQinS);
+											res.cookie('QTS',section);
+											res.cookie('CS',parseInt(result[0]));
+											res.cookie('CQ',parseInt(result[1]));
+											//currS[idx] = parseInt(result[0]);
+											//currQ[idx] = parseInt(result[1]);
 											res.render("createquiz.ejs", { title : creator, QID : Qid });	
 										}
 									});
@@ -248,21 +267,33 @@ app.get('/showincomplete',function (req, res){
 								res.send(404);
 							}else{
 								if(result[1] == 0){
-									QTQ[idx] = totalQinS;
-									QTS[idx] = section;
-									currS[idx] = parseInt(result[0]);
-									currQ[idx] = parseInt(result[1]);
+									res.cookie('QTQ',totalQinS);
+									res.cookie('QTS',section);
+									res.cookie('CS',parseInt(result[0]));
+									res.cookie('CQ',parseInt(result[1]));
+									// QTQ[idx] = totalQinS;
+									// QTS[idx] = section;
+									// currS[idx] = parseInt(result[0]);
+									// currQ[idx] = parseInt(result[1]);
 									res.render("createquiz.ejs", { title : creator, QID : Qid });
 								}else if(result[1] == totalQinS){
-									QTS[idx] = section;
-									currS[idx] = parseInt(result[0])+1;
-									currQ[idx] = 0;								
+									res.cookie('QTS', section);
+									res.cookie('CS', parseInt(result[0]) + 1);
+									res.cookie('CQ', 0);
+									// QTS[idx] = section;
+									// currS[idx] = parseInt(result[0])+1;
+									// currQ[idx] = 0;								
 									res.render("sectiondetail.ejs",{ title : creator, QID : Qid});
 								}else{
-									QTQ[idx] = totalQinS;
-									QTS[idx] = section;
-									currS[idx] = parseInt(result[0]);
-									currQ[idx] = parseInt(result[1]);
+									res.cookie('QTQ',totalQinS);
+									res.cookie('QTS',section);
+									res.cookie('CS',parseInt(result[0]));
+									res.cookie('CQ',parseInt(result[1]));
+
+									// QTQ[idx] = totalQinS;
+									// QTS[idx] = section;
+									// currS[idx] = parseInt(result[0]);
+									// currQ[idx] = parseInt(result[1]);
 									res.render("createquiz.ejs", { title : creator, QID : Qid });
 								}
 							}
@@ -292,8 +323,10 @@ app.post('/quizdetail',function (req, res){
 							var Quizpasswd = req.param('password'),
 							Quizpasswdforstud = req.param('password2');
 							totalDuration = req.param('duration'),
-							sectionCount = req.param('section'),
-							quiz.push(Qid);
+							sectionCount = req.param('section');
+							////
+							//quiz.push(Qid);
+							/////
 							var acttime = req.param('acttime');
 							var ip = acttime.indexOf(' ');
 							var eventDate = acttime.slice(0,ip);
@@ -303,8 +336,10 @@ app.post('/quizdetail',function (req, res){
 							var enddate = endtimex.slice(0,ip);
 							var endtime = endtimex.slice(ip+1,-1);
 							var idx = quiz.indexOf(Qid);
-							QTS[idx] = sectionCount;
-							currS[idx] = 0;
+							//QTS[idx] = sectionCount;
+							res.cookie('QTS',sectionCount);
+							//currS[idx] = 0;
+							res.cookie('CS',0);
 							redis.rpush('Quiz:'+Qid, user, Quizpasswd, eventDate, eventTime, enddate, endtime, totalDuration, Quizpasswdforstud, "RFU",sectionCount, function (err, status){
 								if(err){
 									console.log("UNABLE TO INSERT QUIZ DETAILS");
@@ -318,7 +353,7 @@ app.post('/quizdetail',function (req, res){
 							});
 						}else{
 							res.send(404);
-						}		
+						}
 					}
 				});
 
@@ -360,17 +395,19 @@ app.post('/sectionDetail',function (req, res){
 					sectionmm = parseInt(req.param('duration-minutes'))*60,
 					sectionDuration = ( sectiondd + sectionhh + sectionmm   )*1000,
 					totalQuestions = req.param('Qno');
-					var idx = quiz.indexOf(Qid);
-					QTQ[idx] = totalQuestions;
-					currQ[idx] = 0;
-					redis.rpush("Section:"+ Qid + ":" + currS[idx], rank, sectionName, rulesBlog, totalQuestions, sectionCutoff, sectionDuration, "RFU", "RFU",function (err, status){
+					//var idx = quiz.indexOf(Qid);
+					res.cookie('QTQ',totalQuestions);
+					//QTQ[idx] = totalQuestions;
+					res.cookie('CQ',0);
+					//currQ[idx] = 0;
+					redis.rpush("Section:"+ Qid + ":" + req.cookies.CS, rank, sectionName, rulesBlog, totalQuestions, sectionCutoff, sectionDuration, "RFU", "RFU",function (err, status){
 						if(err){
 							console.log("UNABLE TO INSERT SECTION +" + sectionName + "DETAIL FOR USER" + creator);
 							res.send(404);
 						}else{
 							redis.rpush("Quiz:"+Qid,totalQuestions);
-							redis.lset("Saved:" + creator + ":"+ Qid , 0, currS[idx]);
-							redis.lset("Saved:" + creator + ":"+ Qid , 1, currQ[idx]);
+							redis.lset("Saved:" + creator + ":"+ Qid , 0, req.cookies.CS);
+							redis.lset("Saved:" + creator + ":"+ Qid , 1, 0);
 							res.render("createquiz.ejs", { title : creator, QID : Qid });
 						}
 					});
@@ -428,18 +465,25 @@ app.post('/insert',function  (req, res) {
 					full.push(opt[0][0]);
 					full.push("RFU");
 					full.push("RFU");
-					var idx = quiz.indexOf(Qid);
-					redis.rpush.apply( redis,["Section:"+ Qid + ":" + currS[idx]].concat(full));
-							currQ[idx]++;
-							redis.lset("Saved:" + creator + ":"+ Qid , 0, currS[idx]);
-							redis.lset("Saved:" + creator + ":"+ Qid , 1, currQ[idx]);	
-							console.log(currQ[idx] + " : " + QTQ[idx] + " : " + currS[idx] + " : " + QTS[idx]);
-							if( currQ[idx] == QTQ[idx] ){ //section complete
-								currS[idx]++;
-								if( currS[idx] == QTS[idx]){
+					//var idx = quiz.indexOf(Qid);
+					redis.rpush.apply( redis,["Section:"+ Qid + ":" + req.cookies.CS].concat(full));
+							var btx = parseInt(req.cookies.CQ) + 1;
+							res.cookie('CQ',btx);
+							redis.lset("Saved:" + creator + ":"+ Qid , 0, req.cookies.CS);
+							redis.lset("Saved:" + creator + ":"+ Qid , 1, btx);	
+							console.log(btx + " : " + req.cookies.QTQ + " : " + req.cookies.CS + " : " + req.cookies.QTS);
+							if( btx == req.cookies.QTQ ){ //section complete
+								var atx = parseInt(req.cookies.CS) + 1;
+								res.cookie('CS',atx );
+								if( atx == req.cookies.QTS){
 									redis.del('Saved:'+creator+":"+Qid);
 									res.clearCookie('a');
-									res.render('select.ejs',{ title : creator })
+									res.clearCookie('QTS');
+									res.clearCookie('QTQ');
+									res.clearCookie('CS');
+									res.clearCookie('CQ');
+									res.clearCookie('Qid');
+									res.render('select.ejs',{ title : creator });
 								}else{
 									res.clearCookie('a');
 									res.render("sectiondetail.ejs",{ title : creator, QID : Qid});
@@ -461,9 +505,9 @@ app.post('/insert',function  (req, res) {
 			else{
 				var creator = decrypt(req.cookies.user,key);
 				if( creator == name){
-					var idx = quiz.indexOf(Qid);
-					if( currQ[idx] == QTQ[idx] ){
-						if(currS[idx] == QTS[idx]) res.render('select.ejs',{ title : creator });
+					//var idx = quiz.indexOf(Qid);
+					if( req.cookies.CQ == req.cookies.QTQ ){
+						if(req.cookies.CS == req.cookies.QTS) res.render('select.ejs',{ title : creator });
 						else res.render("sectiondetail.ejs",{ title : creator, QID : Qid});
 					}else res.render("createquiz.ejs", { title : creator, QID : Qid });
 				}else{

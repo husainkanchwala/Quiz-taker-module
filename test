@@ -1,4 +1,4 @@
-del laukik:8
-del log:laukik:8
-del result:laukik:8
-del complete:laukik:8
+del laukik:0
+del log:laukik:0
+del result:laukik:0
+del complete:laukik:0
