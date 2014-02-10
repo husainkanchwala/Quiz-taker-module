@@ -16,16 +16,16 @@
 					   <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 					      <form class="navbar-form navbar-right" action='/logout'>
 					      		<div class="btn-group">
-					      		  <button type="button" class="btn btn-inverse dropdown-toggle" data-toggle="dropdown">
+					      		  <button type="button" class="btn btn-inverse dropdown-toggle" data-toggle="dropdown" style="background: rgba(54, 25, 25, 0);color:#fff">
 					      		    <span class="glyphicon glyphicon-user"></span> <%= title %> 
 					      		    <span class="caret"></span>
 					      		  </button>
 					      		  <ul class="dropdown-menu">
-					      		    <li><a href="/cpasswd?user=<%= title %>" ><span class="glyphicon glyphicon-edit"></span> Change Password</a></li>
+					      		    <li ><a href="/cpasswd?user=<%= title %>" ><span class="glyphicon glyphicon-edit"></span> Change Password</a></li>
 					      		    <li><a href="/login"><span class="glyphicon glyphicon-wrench"></span> Change email address</a></li>
 								  </ul>
 					      		</div>
-					      		<button type="submit" class="btn navbar-btn btn-inverse"><span class="glyphicon glyphicon-log-out"></span> logout</button>
+					      		<button type="submit" class="btn navbar-btn btn-inverse" style="background: rgba(54, 25, 25, 0);color:#fff" ><span class="glyphicon glyphicon-log-out"></span> logout</button>
 					      </form>
 					   </div>
 						
@@ -51,7 +51,7 @@
 				<div class="col-lg-4">
 					<form role="form" class="create-form" action="/quizlogin" method="post">
 						<input type="hidden" name="user" value = <%= title %> >
-						<button class="btn btn-lg btn-inverse btn-block" type="submit" style="float:middle"><span class="glyphicon glyphicon-hand-right"></span> take Quiz</button>
+						<button class="btn btn-lg btn-inverse btn-block" type="submit" style="float:middle;"><span class="glyphicon glyphicon-hand-right"></span> take Quiz</button>
 					</form>
 					<form role="form" class="create-form" action="/create" > 
 						<button class="btn btn-lg btn-inverse btn-block" type="submit" style="float:middle"><span class="glyphicon glyphicon-pencil"></span> create Quiz</button>

@@ -1,28 +1,30 @@
 <html>
-    <body>
-        <head>
+    <head>
         <meta charset="utf-8"> 
-        <link rel= 'stylesheet' href='bootstrap/css/bootstrap.css'  type='text/css'/>
-        </head>
+        <link rel= 'stylesheet' href='bootstrap/css/bootstrap.min.css'  type='text/css'/>
+        <script src="all-ro.js"></script>
+    </head>
+    <body>
         <div class="container">
         <form  action="/showquiz"; role="form" method="post">
             <div> WELCOME <%= title%></div>
-            <input type="hidden" name="user" value = <%= title %> >
-            <input type="hidden" name="Qid" value= <%= Qid %> >    
             <div> SECTION NAME : <%= secdetail[1]%> </div>
             <div> THIS SECTION CONTAINS FOLLOWING NUMBER OF QUESTIONS : <%= secdetail[3]%> </div>
-            <div> YOU WILL BE PROVIDED  <%= secdetail[5]%> TIME IN HH:MM:SS FORMAT</div>
+            <%
+                //var mills = parseInt(secdetail[5]);
+                //var DD = mills/(24*60*60*1000);
+                //mills -= DD;
+               // var HH = mills/(60*60*1000);
+               // mills -= HH;
+               // var MM = mills/(60*1000);
+               // mills -= MM;
+               // var SS = mills/(1000);
+               // mills -= SS;
+                <div> YOU WILL BE PROVIDED  DD : HH : MM : SS TIME IN "DD:HH:MM:SS" FORMAT</div>
+            %>
+            
             <button type="submit" class="btn btn-success"> NEXT </button>
         </form>
         </div>
     </body>
-    <script src="jquery-1.10.2.min.js"></script>
-    <script src='bootstrap/js/bootstrap.js'></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        var $j = jQuery.noConflict();
-        //var socket = io.connect();
-        $j(function(){
-        });
-    </script>
 </html>

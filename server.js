@@ -58,8 +58,7 @@ function encrypt(text,key){
 		return crypted;		
 	}catch(ex){
 		return "?";
-	}
-  
+	} 
 }
  
 function decrypt(text,key){
@@ -72,8 +71,6 @@ function decrypt(text,key){
 		console.log('exception raised  : ' + ex);
 		return "?";
 	}
-  
-
 }
 
 
@@ -157,32 +154,42 @@ app.get("/create",function (req,res){
 });
 
 app.post('/edit-edit',function (req, res){
-	var user = req.param('user');
-	redis.get('QuizValue',function (err, Qc){
-		if(err){
+	var user = req.cookies.uname;
+	redis.lindex(user,-1,function(err, key){
+		if(err){}
+		else{
+			if( user == decrypt(req.cookie.user,key)){
+				redis.get('QuizValue',function (err, Qc){
+					if(err){
 
-		}else{
-			var arr = [];
-			console.log('QuizValue +++++ '+ Qc);
-			for( var i=0; i < Qc ;i++){
-				!function syn(i){
-					redis.lindex("Quiz:"+i,0,function (err, usr){
-						if(err){
-						}else{
-							if( usr == user){
-								arr.push(i);
-								console.log(i);
-							}
-							if( i == Qc - 1 ){
-								res.render("userquizlist.ejs",{ title:user, list:arr});	
-							}			
+					}else{
+						var arr = [];
+						console.log('QuizValue +++++ '+ Qc);
+						for( var i=0; i < Qc ;i++){
+							!function syn(i){
+								redis.lindex("Quiz:"+i,0,function (err, usr){
+									if(err){
+									}else{
+										if( usr == user){
+											arr.push(i);
+											console.log(i);
+										}
+										if( i == Qc - 1 ){
+											res.render("userquizlist.ejs",{ title:user, list:arr});	
+										}			
+									}
+								});
+							}(i);
+							 
 						}
-					});
-				}(i);
-				 
+					}
+				});			
+			}else{
+				res.send(err);
 			}
 		}
 	});
+	
 });
 
 
@@ -545,9 +552,8 @@ app.post('/validatequizid',function (req,res){
 							if( qdetail[7] == passwd ){
 								res.cookie('Q',Qid);
 								redis.exists("complete:"+user+":"+Qid,function (err, stat){
-									if(err){
-
-									}else{
+									if(err){}
+									else{
 										if(stat == 0){
 											redis.lrange("Section:"+Qid+":0",0,7,function (err, secdetail){
 												if(err){
@@ -600,11 +606,6 @@ app.post('/validatequizid',function (req,res){
 															}
 														});
 													}else{
-														// redis.exists("log:"+user+":"+Qid,function (err, stat){
-														// 	if(err){
-
-														// 	}else{
-														// 		if(stat == 0){
 														redis.lrange("log:"+user+":"+Qid,0,-1,function (err, log){
 															console.log("yep");
 															var id = userquizlog.indexOf(user);
@@ -615,23 +616,11 @@ app.post('/validatequizid',function (req,res){
 															userquizlog[id + 4] = log[2];
 															userquizlog[id + 5] = log[2];
 															userquizlog[id + 6] = log[2];
-															// var qno = parseInt(log[1])-1;
-															// userquizlog.push(user);
-															// userquizlog.push(log[0]);
-															// userquizlog.push(qno);
-															// userquizlog.push(Qid);
 															console.log("dart");
 															res.redirect(307,'/showquiz?user='+ user + '&Qid=' + Qid + '&opti=###&' + '&time='+userquizlog[id+6]);
 															console.log("dart clurse");
 														});
-														// 		}else{
-														// 			res.send("DONED>>>>>");
-														// 		}
-														// 	}
-														// });
-														// something went wrong with him...........
-													}
-																
+													}	
 												}
 											} );
 										}else{
@@ -654,11 +643,6 @@ app.post('/validatequizid',function (req,res){
 	});
 	
 });
-
-
-
-
-
 
 app.post('/showquiz',function (req, res){
 	var user = req.param('user');
