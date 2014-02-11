@@ -276,6 +276,7 @@ app.post('/edit-quizdetail',function (req,res){
 							redis.lset( QZ , 5, endtime);
 							redis.lset( QZ , 6,req.param('duration') );
 							redis.lset( QZ , 7, req.param('password2'));
+							res.clearCookie('Q');
 							res.render("select.ejs",{ title : user, QID : Qid});
 						}else{
 							res.clearCookie('uname');
@@ -309,6 +310,7 @@ app.post('/del-quiz',function(req,res){
 						}
 					});
 					redis.del('Saved:'+user+":"+Qid);
+					res.clearCookie('Q');
 					res.render('select.ejs',{title:user});
 				}else{
 					res.clearCookie('uname');
@@ -351,6 +353,7 @@ app.get('/remove-section',function(req,res){
 							}
 						}
 					});
+					res.clearCookie('Q');
 					res.render('select.ejs',{title:user});
 				}else{
 					res.clearCookie('uname');
@@ -361,6 +364,67 @@ app.get('/remove-section',function(req,res){
 				
 			}
 	}); 
+});
+
+app.get('/edit-section-detail',function (req, res){
+	var user = req.cookies.uname;
+	redis.lindex(user,5,function (err, key){
+		if(err){}
+		else{
+			if( decrypt(req.cookies.user, key) == user){
+				var Qid = req.cookies.Q;
+				var rmc = req.param('id');
+				redis.lrange("Section:"+Qid+":"+rmc,0,5,function (err,Sec){
+					if(err){}
+					else{
+						var timemill = parseInt(Sec[5]);
+						var DD = parseInt(timemill/(86400000));
+						timemill = timemill%86400000;
+						var HH = parseInt(timemill/(3600000));
+						timemill = timemill%3600000;
+						var MM = parseInt(timemill/(60000));
+						res.cookie('S',rmc);
+						res.render('edit-sectiondetail.ejs',{title:user,QID:Qid,Sd:Sec,DD:DD,HH:HH,MM:MM});		
+					}
+				});
+			}else{
+				res.clearCookie('uname');
+				res.clearCookie('user');
+				res.clearCookie('Q');
+				res.send(404);
+			}
+		}
+	}); 
+});
+
+app.post('/edit-sectiondetail',function (req,res){
+	var user = req.cookies.uname;
+	redis.lindex(user,5,function (err, key){
+		if(err){}
+		else{
+			if( decrypt(req.cookies.user, key) == user){
+				var Qid = req.cookies.Q;
+				var rmc = req.cookies.S;
+				redis.lset('Section:'+Qid+":"+rmc,0,req.param('rank'));
+				redis.lset('Section:'+Qid+":"+rmc,1,req.param('name'));
+				redis.lset('Section:'+Qid+":"+rmc,2,req.param('rules'));
+				redis.lset('Section:'+Qid+":"+rmc,4,req.param('cutoff'));
+				var sectiondd = parseInt(req.param('duration-days'))*86400,
+				sectionhh = parseInt(req.param('duration-hours'))*3600,
+				sectionmm = parseInt(req.param('duration-minutes'))*60,
+				sectionDuration = ( sectiondd + sectionhh + sectionmm )*1000;
+				redis.lset('Section:'+Qid+":"+rmc,5,sectionDuration);
+				res.clearCookie('S');
+				res.clearCookie('Q');
+				res.render('select.ejs',{title:user});
+			}else{
+				res.clearCookie('uname');
+				res.clearCookie('user');
+				res.clearCookie('Q');
+				res.send(404);
+			}
+		}
+	});
 });
 
 app.get('/edit-complete', function (req, res) {
@@ -562,8 +626,8 @@ app.post('/sectionDetail',function (req, res){
 					sectionName = req.param('name'),
 					rulesBlog = req.param('rules'),
 					sectionCutoff = req.param('cutoff'),
-					sectiondd = parseInt(req.param('duration-days'))*24*60*60,
-					sectionhh = parseInt(req.param('duration-hours'))*60*60,
+					sectiondd = parseInt(req.param('duration-days'))*86400,
+					sectionhh = parseInt(req.param('duration-hours'))*3600,
 					sectionmm = parseInt(req.param('duration-minutes'))*60,
 					sectionDuration = ( sectiondd + sectionhh + sectionmm   )*1000,
 					totalQuestions = req.param('Qno');
