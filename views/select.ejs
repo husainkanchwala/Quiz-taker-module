@@ -50,20 +50,17 @@
 				<div class="col-lg-4"></div>
 				<div class="col-lg-4">
 					<form role="form" class="create-form" action="/quizlogin" method="post">
-						<input type="hidden" name="user" value = <%= title %> >
 						<button class="btn btn-lg btn-inverse btn-block" type="submit" style="float:middle;"><span class="glyphicon glyphicon-hand-right"></span> take Quiz</button>
 					</form>
 					<form role="form" class="create-form" action="/create" > 
 						<button class="btn btn-lg btn-inverse btn-block" type="submit" style="float:middle"><span class="glyphicon glyphicon-pencil"></span> create Quiz</button>
 					</form>
 					<form role="form" class="create-form" action="/edit-complete" > 
-						<input type="hidden" name="user" value = <%= title %> >
 						<button class="btn btn-lg btn-inverse btn-block" type="submit" style="float:middle">
 							<span class="glyphicon glyphicon-edit"></span>complete Quiz
 						</button>
 					</form>
 					<form role="form" class="create-form" action="/edit-edit" method='post' > 
-						<input type="hidden" name="user" value = <%= title %> >
 						<button class="btn btn-lg btn-inverse btn-block" type="submit" style="float:middle">
 							<span class="glyphicon glyphicon-edit"></span>edit Quiz
 						</button>
@@ -121,7 +118,7 @@
 	</body>
 	<script>
 		var rotation = function (ele){
-		   $j(ele).rotate({
+		   $(ele).rotate({
 		      angle:0, 
 		      animateTo:360, 
 		      callback: rotation,

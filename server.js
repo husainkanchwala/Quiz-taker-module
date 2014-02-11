@@ -24,10 +24,6 @@ var number = [];
 /// input data
 
 var quiz = [];
-var currQ = [];
-var currS = [];
-var QTS = [];
-var QTQ = [];
 
 //// output data
 
@@ -158,7 +154,7 @@ app.post('/edit-edit',function (req, res){
 	redis.lindex(user,-1,function(err, key){
 		if(err){}
 		else{
-			if( user == decrypt(req.cookie.user,key)){
+			if( user == decrypt(req.cookies.user,key)){
 				redis.get('QuizValue',function (err, Qc){
 					if(err){
 
@@ -180,7 +176,6 @@ app.post('/edit-edit',function (req, res){
 									}
 								});
 							}(i);
-							 
 						}
 					}
 				});			
@@ -194,7 +189,98 @@ app.post('/edit-edit',function (req, res){
 
 
 app.get('/quizedit',function (req,res){
+	var user = req.cookies.uname;
+	redis.lindex(user,-1,function(err, key){
+		if(err){}
+		else{
+			if( decrypt(req.cookies.user, key) == user ){
+				var Qid = req.param('choice');
+				redis.lrange('Quiz:'+Qid,0,-1,function (err, Qd){
+					if(err){}
+					else{
+						console.log(Qd[0]);
+						if( user == Qd[0]){
+							res.cookie('Q',Qid);
+							var w = parseInt(Qd[9]);
+							for( var r=0; r < w; r++){
+								!function syn(r){
+									redis.lindex("Section:"+Qid+":"+r,1,function (err, sname){
+										if(err){}
+										else{
+											Qd.push(sname);
+											if( r == w-1 ) res.render('edit-what-detail.ejs',{ title:user, Qid:Qid, Qd:Qd.slice(1) });
+										}
+									});
+								}(r);
+							}
+						}else{
+							res.clearCookie('uname');
+							res.clearCookie('user');
+							res.send(404);				
+						}
+								
+					}
+				});
+			}else{
+				res.clearCookie('uname');
+				res.clearCookie('user');
+				res.send(404);
+			}
+		}
+	});
+});
 
+app.get('/edit-pre-quizdetail',function (req,res){
+	var Qid = req.cookies.Q;
+	redis.lrange('Quiz:'+Qid,0,-1,function (err, Qd){
+		if(err){}
+		else{
+			res.render('edit-prequiz-detail.ejs',{ title:req.cookies.uname, Qid:Qid, Qd:Qd.slice(1,Qd.length) });
+		}
+	});
+});
+
+app.post('/edit-quizdetail',function (req,res){
+	var user = req.cookies.uname;
+	redis.lindex(user,5,function (err, key){
+		if(err){}
+		else{
+			if( decrypt(req.cookies.user,key)  == user ){
+				var Qid = req.cookies.Q;
+				var QZ = 'Quiz:' + Qid;
+				redis.lindex(QZ,0,function (err,usr){
+					if(err){}
+					else{
+						if(user == usr){
+							var acttime = req.param('acttime');
+							var ip = acttime.indexOf(' ');
+							var eventDate = acttime.slice(0,ip);
+							var eventTime = acttime.slice(ip+1);
+							var endtimex = req.param('endtime');
+							ip = endtimex.indexOf(' ');
+							var enddate = endtimex.slice(0,ip);
+							var endtime = endtimex.slice(ip+1);
+							redis.lset( QZ , 1, req.param('password'));
+							redis.lset( QZ , 2, eventDate);
+							redis.lset( QZ , 3, eventTime);
+							redis.lset( QZ , 4, enddate);
+							redis.lset( QZ , 5, endtime);
+							redis.lset( QZ , 6,req.param('duration') );
+							redis.lset( QZ , 7, req.param('password2'));
+							res.render("select.ejs",{ title : user, QID : Qid});
+						}else{
+							res.clearCookie('uname');
+							res.clearCookie('user');
+							res.clearCookie('Q');
+							res.send(404);
+						}
+					}
+				});
+			}else{
+				res.send(404);
+			}
+		}
+	});
 });
 
 app.get('/edit-complete', function (req, res) {
