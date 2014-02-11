@@ -53,6 +53,9 @@
 					<form role="form" class="create-form" action="/edit-pre-quizdetail" >
 						<button class="btn btn-lg btn-inverse btn-block" type="submit" style="float:middle;"><span class="glyphicon glyphicon-edit"></span>Edit Quiz Detail</button>
 					</form>
+					<form role="form" class="create-form" action="/del-quiz" >
+						<button class="btn btn-lg btn-danger btn-block" type="submit" style="float:middle;"><span class="glyphicon glyphicon-remove-sign"></span>Delete Quiz</button>
+					</form>
 				</div>
 				<div class="col-lg-2">
 					<p style="color:#fff;font-size:20px;margin-left:15px"> Section Detail </p>
@@ -61,10 +64,19 @@
 							<span class="glyphicon glyphicon-plus-sign"></span>Add
 						</button>
 					</form>	
-					<form role="form" class="create-form" action="/remove-section" method='post' > 
-						<button class="btn btn-lg btn-inverse btn-block" type="submit" style="float:middle">
-							<span class="glyphicon glyphicon-remove-sign"></span>Remove
+					<form role="form" class="create-form" > 
+						<button class="btn btn-lg btn-inverse btn-block dropdown-toggle" type="submit" style="float:middle" data-toggle="dropdown" >
+							<span class="glyphicon glyphicon-remove-sign"></span> Remove  <span class="caret"></span>
 						</button>
+		      		    <ul class="dropdown-menu">
+		      		    	<% for( var i = 0 ; i < Qd[8]; i++) {%>
+		      		    		<li >
+		      		    			<a href="/remove-section?id=<%= i %>" >
+		      		    				<span class="glyphicon glyphicon-edit"></span> <%= Qd[ i + 8+ parseInt(Qd[8]) + 1]%>
+		      		    			</a>
+		      		    		<li>	
+		      		    	<%}%>
+						</ul>
 					</form>
 					<form role="form" class="create-form" > 
 						<button class="btn btn-lg btn-inverse btn-block dropdown-toggle" type="submit" style="float:middle" data-toggle="dropdown" >
