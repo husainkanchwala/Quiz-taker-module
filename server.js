@@ -292,6 +292,77 @@ app.post('/edit-quizdetail',function (req,res){
 	});
 });
 
+app.post('/del-quiz',function(req,res){
+	var user = req.cookies.uname;
+	redis.lindex(user,5,function (err, key){
+			if(err){}
+			else{
+				if( decrypt(req.cookies.user, key) == user){
+					var Qid = req.cookies.Q;
+					var QZ = "Quiz:"+Qid;
+					redis.lindex(QZ,9,function (err,Sec){
+						if(err){}
+						else{
+							redis.del(QZ);
+							var intsec = parseInt(Sec);
+							for( var j=0; j < intsec; j++) redis.del('Section:'+Qid+":"+j);
+						}
+					});
+					redis.del('Saved:'+user+":"+Qid);
+					res.render('select.ejs',{title:user});
+				}else{
+					res.clearCookie('uname');
+					res.clearCookie('user');
+					res.clearCookie('Q');
+					res.send(404);
+				}
+				
+			}
+	}); 
+});
+
+
+app.get('/remove-section',function(req,res){
+	var user = req.cookies.uname;
+	redis.lindex(user,5,function (err, key){
+			if(err){}
+			else{
+				if( decrypt(req.cookies.user, key) == user){
+					var Qid = req.cookies.Q;
+					var rmc = parseInt(req.param('id'));
+					var QZ = "Quiz:"+Qid;
+					redis.lrange(QZ,9,-1,function (err,Sec){
+						if(err){}
+						else{
+							redis.del('Section:'+Qid+":"+rmc);
+							var intsec = parseInt(Sec[0]);
+
+							redis.lset(QZ,9,intsec-1);
+							for( var j=rmc,k=rmc+1; k < intsec; j++,k++){
+								!function syn(k){
+									redis.lset(QZ,j+10,Sec[k+1]);
+									if( k == intsec-1) redis.rpop(QZ);
+								}(k);
+							}
+							for( var j=rmc,k=rmc+1; k < intsec; j++,k++){
+								!function syn(k){
+									redis.rename('Section:'+Qid+":"+k,'Section:'+Qid+":"+j);
+								}(k);
+							}
+						}
+					});
+					res.render('select.ejs',{title:user});
+				}else{
+					res.clearCookie('uname');
+					res.clearCookie('user');
+					res.clearCookie('Q');
+					res.send(404);
+				}
+				
+			}
+	}); 
+});
+
 app.get('/edit-complete', function (req, res) {
 	var user = req.cookies.uname;
 	redis.lindex(user,5,function (err, key){
