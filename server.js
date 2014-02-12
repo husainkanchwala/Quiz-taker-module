@@ -100,9 +100,76 @@ app.post('/add-section',function (req, res){
 	});
 });
 
+app.post('/insert-edit-question',function (req, res){
+	var user = req.cookies.uname;
+	redis.lindex(user,5,function (err, key){
+		if(err){}
+		else{
+			if( decrypt(req.cookies.user, key) == user){
+				var Qid = req.cookies.Q;
+				var Sid = req.cookies.Sid;
+				var editQ = parseInt(req.cookies.Eq);
+				var ky = 'Section:' + Qid + ":" + Sid;
+				var opt = req.param('opt');
+				redis.lset(ky,editQ,req.param('questiontt1'));
+				// if( req.param('paths') == "0" ){
+				// 	full.push("????");
+				// }else{
+				// 	var str = req.files.questiontt2.path;
+				// 	var qqq = str.replace( __dirname, '');
+				// 	full.push(qqq.replace( 'public/', ''));
+				// }
+				
+				redis.lset(ky,editQ+2,req.param('add'));
+				redis.lset(ky,editQ+3,req.param('sub'));
+				redis.lset(ky,editQ+8,opt[0][0]);
+				redis.lindex(ky,editQ+1,function (err, wt){
+					if(err){}
+					else{
+						if( wt[0] != '?'){
+							var str = req.files.questiontt2.path;
+							var qqq = str.replace( __dirname, '');
+							redis.lset(ky,editQ+1,qqq.replace( 'public/', ''));
+						}
+					}
+				});
+				var len =opt[0].length;
+				for( var i = 1; i < 5; i++){
+					!function syn(i){
+						if(i<len) redis.lset(ky,editQ+3+i,opt[0][i]);
+						else redis.lset(ky,editQ+3+i,"????");	
+					}(i)
+				}
+				res.clearCookie('Q');
+				res.clearCookie('Sid');
+				res.clearCookie('Eq');
+				res.render('select.ejs',{title:user});
+			}else{
+				res.clearCookie('uname');
+				res.clearCookie('user');
+				res.clearCookie('Q');
+				res.clearCookie('Sid');
+				res.clearCookie('Eq');
+				res.send(404);
+			}
+		}
+	});
+});
 
 app.get('/add-question',function (req, res){
 	res.render('addquestion.ejs',{ title:req.cookies.uname, QID : req.cookies.Q});
+});
+app.get('/edit-question',function (req, res){
+	var Qid = req.cookies.Q;
+	var Sid = req.cookies.Sid;
+	var editQ = (parseInt(req.param('editQ')) - 1) * 11 + 8;
+	res.cookie('Eq',editQ);
+	redis.lrange('Section:'+ Qid + ":" + Sid, editQ, editQ+10,function (err, Qdata){
+		if(err){}
+		else{
+			res.render('edit-question.ejs',{ title:req.cookies.uname, QID : req.cookies.Q, Qd:Qdata});		
+		}
+	});
 });
 
 app.post('/insert-add-question',function (req, res){
