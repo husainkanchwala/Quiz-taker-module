@@ -16,22 +16,16 @@ io.set('transports', [                     // enable all transports (optional if
 ]);
 var path = require("path");
 var crypto = require('crypto');
+
 /*    DATA HOLDERS        */
 
 var correct = [];
 var number = [];
 
-/// input data
-
-
-//// output data
-
 var Quizdetail = [];
 var userquizlog = [];
 var sockuser = [];
-///// hashes
  
-
 /*    middlewares          */
 
 app.set('views', __dirname + '/views');
@@ -41,7 +35,6 @@ app.use(express.bodyParser({ keepExtensions: true,uploadDir: __dirname + '/publi
 app.use(express.cookieParser());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
-
 
 /*        encryption functions  */
 
@@ -68,12 +61,43 @@ function decrypt(text,key){
 	}
 }
 
-
 /*            here server lies        */
 
 app.get('/',function (req, res){
 	console.log("5002");
 	res.render('front.ejs',{title2:""});
+});
+
+app.post('/add-section',function (req, res){
+	var user = req.cookies.uname;
+	redis.lindex(user,5,function (err, key){
+		if(err){}
+		else{
+			if( decrypt(req.cookies.user, key) == user){
+				var Qid = req.cookies.Q;
+				var QZ = "Quiz:"+Qid;
+				redis.lindex(QZ,9,function (err, sec){
+					if(err){}
+					else{
+						var x = parseInt(sec);
+						x++;
+						redis.lset(QZ,9,x);
+						res.cookie('QTS',x);
+						res.cookie('CS',x-1);
+						res.clearCookie('Q');
+						redis.rpush("Saved:" + user + ":"+ Qid , x-1,0);
+						res.cookie('Qid',Qid);
+						res.render("sectiondetail.ejs",{ title : user, QID : Qid});
+					}
+				});
+			}else{
+				res.clearCookie('uname');
+				res.clearCookie('user');
+				res.clearCookie('Q');
+				res.send(404);
+			}
+		}
+	});
 });
 
 app.get('/cpasswd',function (req,res){
@@ -90,6 +114,9 @@ app.get("/create",function (req,res){
 			if( name == user){
 				res.render('predetailofquiz.ejs', {title : user});
 			}else{
+				res.clearCookie('uname');
+				res.clearCookie('user');
+				res.clearCookie('Q');
 				res.send(404);
 			}		
 		}
@@ -127,11 +154,13 @@ app.post('/edit-edit',function (req, res){
 					}
 				});			
 			}else{
-				res.send(err);
+				res.clearCookie('uname');
+				res.clearCookie('user');
+				res.clearCookie('Q');
+				res.send(404);
 			}
 		}
 	});
-	
 });
 
 app.get('/edit-pre-quizdetail',function (req,res){
@@ -182,6 +211,9 @@ app.post('/edit-quizdetail',function (req,res){
 					}
 				});
 			}else{
+				res.clearCookie('uname');
+				res.clearCookie('user');
+				res.clearCookie('Q');
 				res.send(404);
 			}
 		}
@@ -398,9 +430,6 @@ app.post('/validate',function (req,res){
 	});
 });
 
-
-
-
 app.get('/quizedit',function (req,res){
 	var user = req.cookies.uname;
 	redis.lindex(user,-1,function(err, key){
@@ -452,7 +481,6 @@ app.get('/quizedit',function (req,res){
 	});
 });
 
-
 app.post('/del-quiz',function (req,res){
 	var user = req.cookies.uname;
 	redis.lindex(user,5,function (err, key){
@@ -482,7 +510,6 @@ app.post('/del-quiz',function (req,res){
 			}
 	}); 
 });
-
 
 app.get('/remove-section',function (req,res){
 	var user = req.cookies.uname;
@@ -525,8 +552,6 @@ app.get('/remove-section',function (req,res){
 			}
 	}); 
 });
-
-
 
 app.get('/showincomplete',function (req, res){
 	var creator = req.cookies.uname;
@@ -740,7 +765,6 @@ app.post('/sectionDetail',function (req, res){
 			}
 		});	
 	}
-	
 });
 
 app.post('/insert',function  (req, res) {
@@ -825,8 +849,6 @@ app.post('/insert',function  (req, res) {
 		});
 	}
 });
-
-
 
 app.get('/done',function (req, res){
 	console.log("DONE CREATING QUIZ!!!!!!");
@@ -942,7 +964,6 @@ app.post('/validatequizid',function (req,res){
 			}
 		}
 	});
-	
 });
 
 app.post('/showquiz',function (req, res){
@@ -1143,9 +1164,7 @@ app.post('/showquiz',function (req, res){
 			//res.send("DONED");
 		}
 	}
-	
 });
-
 
 /*			  socket.io stuff		 */ 
 
@@ -1247,6 +1266,5 @@ io.sockets.on('connection',function (socket){
 		/* do storing work*/
 	});
 });
-
 
 //52d6c6aa500446bc2d00000b@quizzer-laukik.rhcloud.com
