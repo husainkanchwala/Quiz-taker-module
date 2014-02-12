@@ -100,6 +100,64 @@ app.post('/add-section',function (req, res){
 	});
 });
 
+
+app.get('/add-question',function (req, res){
+	res.render('addquestion.ejs',{ title:req.cookies.uname, QID : req.cookies.Q});
+});
+
+app.post('/insert-add-question',function (req, res){
+	var user = req.cookies.uname;
+	redis.lindex(user,5,function (err, key){
+		if(err){}
+		else{
+			if( decrypt(req.cookies.user, key) == user){
+				var Qid = req.cookies.Q;
+				var Sid = parseInt(req.cookies.Sid);
+				var full = [];
+				full.push(req.param('questiontt1'));
+				if( req.param('paths') == "0" ){
+					full.push("????");
+				}else{
+					var str = req.files.questiontt2.path;
+					var qqq = str.replace( __dirname, '');
+					full.push(qqq.replace( 'public/', ''));
+				}
+				full.push(req.param('add'));
+				full.push(req.param('sub'));
+				var opt = req.param('opt');
+				var len =opt[0].length;
+				for( var i = 1; i < 5; i++){
+					if( i < len ) full.push(opt[0][i]);
+					else full.push("????");
+				}
+				full.push(opt[0][0]);
+				full.push("RFU");
+				full.push("RFU");
+				redis.rpush.apply( redis,["Section:"+ Qid + ":" + Sid].concat(full));
+				redis.lindex('Quiz:'+Qid,10+Sid,function (err, Qcount){
+					if(err){}
+					else{
+						var intcount = parseInt(Qcount) + 1;
+						redis.lset('Quiz:'+Qid,10+Sid,intcount);		
+						redis.lset('Section:'+Qid+":"+Sid,3,intcount);
+					}
+				});
+				res.clearCookie('Q');
+				res.clearCookie('S');
+				res.render('select.ejs',{title:user});
+			}else{
+				res.clearCookie('uname');
+				res.clearCookie('user');
+				res.clearCookie('Q');
+				res.clearCookie('S');
+				res.send(404);
+			}
+		}
+	});
+});
+
+
+
 app.get('/cpasswd',function (req,res){
 	res.render('cpasswd.ejs', { user : req.param('user')});
 });

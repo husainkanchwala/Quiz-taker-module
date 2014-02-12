@@ -4,6 +4,7 @@
 		<title> QATAP </title>
 		<link rel= 'stylesheet' href='bootstrap/css/bootstrap.min.css'  type='text/css'/>
 		<script src="all.js"></script>
+		<script src="jquery.cookie.js"></script>
 	</head>
 	<body background="img/alpha.jpg">
 		<div class="container">
@@ -100,7 +101,7 @@
 			      		    <div class="col-lg-6">
 			      		    	<% for( var i = 0 ; i < Qd[8]; i++) {%>
 			      		    		<ul style="margin-top:16px;margin-bottom:48px">
-			      		    			<input type="radio" class="radio" name="rad" value="<%= i%>">
+			      		    			<input type="radio" class="radio" name="rad" value="<%= i%>" onclick="set(this);">
 			      		    			<span class="glyphicon glyphicon-edit" style="color:#fff"> 
 			      		    				Section:<%= Qd[ i + 8+ parseInt(Qd[8]) + 1]%>:Questions:<%= Qd[i+8+1]%>
 			      		    			</span>
@@ -119,10 +120,10 @@
 			      		    				<input type="text" placeholder="Question number to edit" style="height:42px;width:100%" class="form-control" name="editQ" id="editQ">
 			      		    		</div>
 			      		    	</form>
-			      		    	<form role="form" class="create-form" style="margin-bottom:10px" action="/remove-question" method='post' > 
+			      		    	<form role="form" class="create-form" style="margin-bottom:10px" action="/remove-question"  > 
 			      		    		<div class="input-group">
 			      		    			<span class="input-group-btn">
-			      		    				<button class=" btn-lg btn-inverse" type="submit" style="float:middle;margin-top:15px">
+			      		    				<button class=" btn-lg btn-inverse" type="submit" style="float:middle;margin-top:15px" >
 			      		    					<span class="glyphicon glyphicon-remove-sign"></span>
 			      		    				</button>
 			      		    			</span>
@@ -130,8 +131,8 @@
 			      		    				<input type="text" placeholder="Question number to remove" style="height:42px;width:100%;margin-top:15px" class="form-control" name="remQ" id="remQ">
 			      		    		</div>
 			      		    	</form>
-			      		    	<form role="form" class="create-form" action="/add-question" method='post' style="margin-bottom:15px;margin-top:15px" > 
-			      		    		<button class="btn btn-lg btn-inverse btn-block" type="submit" style="float:middle">
+			      		    	<form role="form" class="create-form" action="/add-question"  style="margin-bottom:15px;margin-top:15px" > 
+			      		    		<button class="btn btn-lg btn-inverse btn-block" type="submit" style="float:middle" >
 			      		    			<span class="glyphicon glyphicon-plus-sign"></span>Add Question
 			      		    		</button>
 			      		    	</form>
@@ -185,6 +186,9 @@
 		</div>
 	</body>
 	<script>
+		var set = function (ele){
+			$.cookie('Sid',$(ele).val());
+		}
 		var rotation = function (ele){
 		   $(ele).rotate({
 		      angle:0, 
