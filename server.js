@@ -112,14 +112,6 @@ app.post('/insert-edit-question',function (req, res){
 				var ky = 'Section:' + Qid + ":" + Sid;
 				var opt = req.param('opt');
 				redis.lset(ky,editQ,req.param('questiontt1'));
-				// if( req.param('paths') == "0" ){
-				// 	full.push("????");
-				// }else{
-				// 	var str = req.files.questiontt2.path;
-				// 	var qqq = str.replace( __dirname, '');
-				// 	full.push(qqq.replace( 'public/', ''));
-				// }
-				
 				redis.lset(ky,editQ+2,req.param('add'));
 				redis.lset(ky,editQ+3,req.param('sub'));
 				redis.lset(ky,editQ+8,opt[0][0]);
@@ -170,6 +162,56 @@ app.get('/edit-question',function (req, res){
 			res.render('edit-question.ejs',{ title:req.cookies.uname, QID : req.cookies.Q, Qd:Qdata});		
 		}
 	});
+});
+
+app.get('/remove-question',function (req, res){
+	if(req.cookies.R == 0){
+		res.render('select.ejs',{title:req.cookies.uname});
+	}else{
+		var user = req.cookies.uname;
+		redis.lindex(user,5,function (err, key){
+			if(err){}
+			else{
+				if( decrypt(req.cookies.user, key) == user){
+					var Qid = req.cookies.Q;
+					var Sid = parseInt(req.cookies.Sid);
+					var remQ = (parseInt(req.param('remQ')) - 1) * 11 + 8;
+					var ky = 'Section:' + Qid + ":" + Sid;
+					redis.lindex('Quiz:'+Qid,10+Sid,function (err, Qcount){
+						if(err){}
+						else{
+							redis.lrange(ky,remQ,-1,function (err, full){
+								if(err){}
+								else{
+									redis.ltrim(ky,0,remQ-1, function (err, stat){
+										if(err){ console.log("aaaaa")}
+										else{
+											full.splice(0,11);
+											if( full.length != 0 ) redis.rpush.apply( redis,['Section:' + Qid + ":" + Sid].concat(full));
+										}
+									});
+								}
+							});
+							var intcount = parseInt(Qcount) - 1;
+							redis.lset('Quiz:'+Qid,10+Sid,intcount);		
+							redis.lset('Section:'+Qid+":"+Sid,3,intcount);
+						}
+					});
+					res.clearCookie('Q');
+					res.clearCookie('Sid');
+					res.cookie('R',0);
+					res.render('select.ejs',{title:user});
+				}else{
+					res.clearCookie('uname');
+					res.clearCookie('user');
+					res.clearCookie('Q');
+					res.clearCookie('Sid');
+					res.send(404);
+				}
+			}
+		});	
+	}
+	
 });
 
 app.post('/insert-add-question',function (req, res){
@@ -650,23 +692,24 @@ app.get('/remove-section',function (req,res){
 						else{
 							redis.del('Section:'+Qid+":"+rmc);
 							var intsec = parseInt(Sec[0]);
-
-							redis.lset(QZ,9,intsec-1);
-							for( var j=rmc,k=rmc+1; k < intsec; j++,k++){
-								!function syn(k){
-									redis.lset(QZ,j+10,Sec[k+1]);
-									if( k == intsec-1) redis.rpop(QZ);
-								}(k);
-							}
-							for( var j=rmc,k=rmc+1; k < intsec; j++,k++){
-								!function syn(k){
-									redis.rename('Section:'+Qid+":"+k,'Section:'+Qid+":"+j);
-								}(k);
-							}
+								redis.lset(QZ,9,intsec-1);
+								for( var j=rmc,k=rmc+1; k < intsec; j++,k++){
+									!function syn(k){
+										redis.lset(QZ,j+10,Sec[k+1]);
+										if( k == intsec-1) redis.rpop(QZ);
+									}(k);
+								}
+								for( var j=rmc,k=rmc+1; k < intsec; j++,k++){
+									!function syn(k){
+										redis.rename('Section:'+Qid+":"+k,'Section:'+Qid+":"+j);
+									}(k);
+								}
+								
 						}
 					});
 					res.clearCookie('Q');
 					res.render('select.ejs',{title:user});
+					
 				}else{
 					res.clearCookie('uname');
 					res.clearCookie('user');
@@ -782,9 +825,6 @@ app.post('/quizdetail',function (req, res){
 							Quizpasswdforstud = req.param('password2');
 							totalDuration = req.param('duration'),
 							sectionCount = req.param('section');
-							////
-							//quiz.push(Qid);
-							/////
 							var acttime = req.param('acttime');
 							var ip = acttime.indexOf(' ');
 							var eventDate = acttime.slice(0,ip);
@@ -793,10 +833,7 @@ app.post('/quizdetail',function (req, res){
 							ip = endtimex.indexOf(' ');
 							var enddate = endtimex.slice(0,ip);
 							var endtime = endtimex.slice(ip+1,-1);
-							var idx = quiz.indexOf(Qid);
-							//QTS[idx] = sectionCount;
 							res.cookie('QTS',sectionCount);
-							//currS[idx] = 0;
 							res.cookie('CS',0);
 							redis.rpush('Quiz:'+Qid, user, Quizpasswd, eventDate, eventTime, enddate, endtime, totalDuration, Quizpasswdforstud, "RFU",sectionCount, function (err, status){
 								if(err){
