@@ -1,15 +1,32 @@
-var redis = require('redis').createClient('6379','127.0.0.1');
-redis.set('x11','laukik',function  (err, res) {
-	if(err){
-		console.log('err');
-	}else{
-		console.log(res);
+var crypto = require('crypto');
+function encrypt(text,key){
+	try{
+		var cipher = crypto.createCipher('aes-256-cbc',key)
+		var crypted = cipher.update(text,'utf8','hex')
+		crypted += cipher.final('hex');
+		return crypted;		
+	}catch(ex){
+		return "?";
+	} 
+}
+ 
+function decrypt(text,key){
+	try{
+		var decipher = crypto.createDecipher('aes-256-cbc',key);
+		var dec = decipher.update(text,'hex','utf8')
+		dec += decipher.final('utf8');
+		return dec;
+	}catch(ex){
+		console.log('exception raised  : ' + ex);
+		return "?";
 	}
-});
-redis.get('x11',function (err, x11){
-	if(err){
-		console.log('err 2');
-	}else{
-		console.log(x11);
-	}
-});
+}
+
+
+
+
+
+
+
+var x = encrypt('laukik',"laukik");
+console.log(x);

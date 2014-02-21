@@ -21,7 +21,6 @@ var crypto = require('crypto');
 
 var correct = [];
 var number = [];
-
 var Quizdetail = [];
 var userquizlog = [];
 var sockuser = [];
@@ -48,7 +47,7 @@ function encrypt(text,key){
 		return "?";
 	} 
 }
- 
+
 function decrypt(text,key){
 	try{
 		var decipher = crypto.createDecipher('aes-256-cbc',key);
@@ -330,6 +329,48 @@ app.post('/edit-edit',function (req, res){
 	});
 });
 
+app.get('/edit-edit',function (req, res){
+	var user = req.cookies.uname;
+	redis.lindex(user,-1,function(err, key){
+		if(err){}
+		else{
+			if( user == decrypt(req.cookies.user,key)){
+				redis.get('QuizValue',function (err, Qc){
+					if(err){
+
+					}else{
+						var arr = [];
+						console.log('QuizValue +++++ '+ Qc);
+						for( var i=0; i < Qc ;i++){
+							!function syn(i){
+								redis.lindex("Quiz:"+i,0,function (err, usr){
+									if(err){
+									}else{
+										if( usr == user){
+											arr.push(i);
+											console.log(i);
+										}
+										if( i == Qc - 1 ){
+											res.cookie('W',0);
+											res.render("userquizlist.ejs",{ title:user, list:arr});	
+										}			
+									}
+								});
+							}(i);
+						}
+					}
+				});			
+			}else{
+				res.clearCookie('uname');
+				res.clearCookie('user');
+				res.clearCookie('Q');
+				res.send(404);
+			}
+		}
+	});
+});
+
+
 app.get('/edit-pre-quizdetail',function (req,res){
 	var Qid = req.cookies.Q;
 	redis.lrange('Quiz:'+Qid,0,-1,function (err, Qd){
@@ -535,18 +576,32 @@ app.get('/eval',function (req, res){
 									}
 								}		
 							});
-
 						}
 					});
 				}(i);
 			}
-			
 		}
 	});
 });
 
 app.get('/go',function (req, res){
 	res.render('signup.ejs');
+});
+
+app.get('/home',function (req, res){
+	var user = req.cookies.uname;
+	redis.lindex(user,-1,function(err, key){
+		if(err){}
+		else{
+			if( user == decrypt(req.cookies.user,key)){
+				res.render('select.ejs',{ title : user});
+			}else{
+				res.clearCookie('uname');
+				res.clearCookie('user');
+				res.redirect('/');	
+			}
+		}
+	});
 });
 
 app.get('/login',function (req,res){
@@ -567,6 +622,15 @@ app.post('/signin', function (req, res){
 	var passwd = req.param('passwd');
 	console.log(uname+" : "+ email + " : " + passwd);
 	res.redirect('/login');
+});
+
+app.get('/tour',function (req, res){
+	redis.lrange('Tour',0,10,function (err, tour){
+		if(err){}
+		else{
+
+		}
+	});
 });
 
 app.post('/validate',function (req,res){
@@ -615,19 +679,24 @@ app.get('/quizedit',function (req,res){
 								else{
 									console.log(Qd[0]);
 									if( user == Qd[0]){
-										res.cookie('Q',Qid);
-										var w = parseInt(Qd[9]);
-										for( var r=0; r < w; r++){
-											!function syn(r){
-												redis.lindex("Section:"+Qid+":"+r,1,function (err, sname){
-													if(err){}
-													else{
-														Qd.push(sname);
-														if( r == w-1 ) res.render('edit-what-detail.ejs',{ title:user, Qid:Qid, Qd:Qd.slice(1) });
-													}
-												});
-											}(r);
+										if( req.param('passwd') == Qd[1]){
+											res.cookie('Q',Qid);
+											var w = parseInt(Qd[9]);
+											for( var r=0; r < w; r++){
+												!function syn(r){
+													redis.lindex("Section:"+Qid+":"+r,1,function (err, sname){
+														if(err){}
+														else{
+															Qd.push(sname);
+															if( r == w-1 ) res.render('edit-what-detail.ejs',{ title:user, Qid:Qid, Qd:Qd.slice(1) });
+														}
+													});
+												}(r);
+											}
+										}else{
+											res.redirect('/edit-edit');
 										}
+										
 									}else{
 										res.clearCookie('uname');
 										res.clearCookie('user');
@@ -957,7 +1026,7 @@ app.post('/insert',function  (req, res) {
 						else full.push("????");
 					}
 					full.push(opt[0][0]);
-					full.push("RFU");
+					full.push(req.param('type'));
 					full.push("RFU");
 					//var idx = quiz.indexOf(Qid);
 					redis.rpush.apply( redis,["Section:"+ Qid + ":" + req.cookies.CS].concat(full));
@@ -1017,119 +1086,124 @@ app.get('/done',function (req, res){
 	res.send(200);
 });
 
+/*       participant part */
+
 app.post('/quizlogin',function (req, res){
-	res.render('quiztakinglogin.ejs',{ title: req.param('user')});
+	res.render('quiztakinglogin.ejs',{ title: req.cookies.uname});
 });
 
 app.post('/validatequizid',function (req,res){
-	var name = req.cookies.uname;
-	redis.lindex(name,5,function (err, key){
-		if(err){}
-		else{
-			var user = decrypt(req.cookies.user,key);
-			if( user == name){
-				var Qid = req.param('Qid');
-				var passwd = req.param('passwd');
-				redis.lrange("Quiz:"+Qid,0,-1,function (err,qdetail){
-					if(err) res.send(404);
-					else{
-						if(qdetail[7]){
-							if( qdetail[7] == passwd ){
-								res.cookie('Q',Qid);
-								redis.exists("complete:"+user+":"+Qid,function (err, stat){
-									if(err){}
-									else{
-										if(stat == 0){
-											redis.lrange("Section:"+Qid+":0",0,7,function (err, secdetail){
-												if(err){
-													console.log("UNABLE TO GET SECTION DETAILS");
-													res.send(404);
-												}else{
-													var pool = Quizdetail.indexOf(Qid); 
-													if( pool == -1){
-														console.log("here");
-														Quizdetail.push(Qid);
-														Quizdetail.push(qdetail.slice(9,qdetail.length));
-														Quizdetail.push(1);
-														console.log(Quizdetail);
+	if( !req.cookies.Z){
+		var name = req.cookies.uname;
+		redis.lindex(name,5,function (err, key){
+			if(err){}
+			else{
+				var user = decrypt(req.cookies.user,key);
+				if( user == name){
+					var Qid = req.param('Qid');
+					var passwd = req.param('passwd');
+					redis.lrange("Quiz:"+Qid,0,-1,function (err,qdetail){
+						if(err) res.send(404);
+						else{
+							if(qdetail[7]){
+								if( qdetail[7] == passwd ){
+									res.cookie('Q',Qid);
+									redis.exists("complete:"+user+":"+Qid,function (err, stat){
+										if(err){}
+										else{
+											if(stat == 0){
+												redis.lrange("Section:"+Qid+":0",0,7,function (err, secdetail){
+													if(err){
+														console.log("UNABLE TO GET SECTION DETAILS");
+														res.send(404);
 													}else{
-														//reference count of Quizdetail
-														Quizdetail[pool+2]++;
-													}
-													if( userquizlog.indexOf(user) == -1){
-														redis.exists("log:"+user+":"+Qid,function (err, stat){
-															if(err){}
-															else{
-																if(stat == 1){
-																	redis.lrange("log:"+user+":"+Qid, 0, -1,function (err, log){
-																		console.log("yep");
-																		var qno = parseInt(log[1])-1;
-																		if(qno < 0) qno = 0;
+														var pool = Quizdetail.indexOf(Qid); 
+														if( pool == -1){
+															console.log("here");
+															Quizdetail.push(Qid);
+															Quizdetail.push(qdetail.slice(9));
+															Quizdetail.push(1);
+															console.log(Quizdetail);
+														}else{
+															//reference count of Quizdetail
+															Quizdetail[pool+2]++;
+														}
+														if( userquizlog.indexOf(user) == -1){
+															redis.exists("log:"+user+":"+Qid,function (err, stat){
+																if(err){}
+																else{
+																	if(stat == 1){
+																		redis.lrange("log:"+user+":"+Qid, 0, -1,function (err, log){
+																			console.log("yep");
+																			var qno = parseInt(log[1])-1;
+																			if(qno < 0) qno = 0;
+																			userquizlog.push(user);
+																			userquizlog.push(log[0]);
+																			userquizlog.push(qno);
+																			userquizlog.push(Qid);
+																			userquizlog.push(log[2]);
+																			userquizlog.push(log[2]);
+																			userquizlog.push(log[2]);
+																			console.log("dart");
+																			res.redirect(307,'/showquiz?user='+ user + '&Qid=' + Qid + '&opti=###&' + '&time='+log[2]);
+																			console.log("dart clurse");
+																		});
+																	}else{
 																		userquizlog.push(user);
-																		userquizlog.push(log[0]);
-																		userquizlog.push(qno);
+																		userquizlog.push(0);
+																		userquizlog.push(0);
 																		userquizlog.push(Qid);
-																		userquizlog.push(log[2]);
-																		userquizlog.push(log[2]);
-																		userquizlog.push(log[2]);
-																		console.log("dart");
-																		res.redirect(307,'/showquiz?user='+ user + '&Qid=' + Qid + '&opti=###&' + '&time='+log[2]);
-																		console.log("dart clurse");
-																	});
-																}else{
-																	userquizlog.push(user);
-																	userquizlog.push(0);
-																	userquizlog.push(0);
-																	userquizlog.push(Qid);
-																	userquizlog.push(secdetail[5]);
-																	userquizlog.push(secdetail[5]);
-																	userquizlog.push(secdetail[5]);
-																	redis.rpush("log:"+user+":"+Qid,0,0,secdetail[5]);	
-																	redis.rpush( user+":"+Qid, "^");
-																	res.render("info.ejs",{ title:user, Qid:Qid, secdetail : secdetail});
+																		userquizlog.push(secdetail[5]);
+																		userquizlog.push(secdetail[5]);
+																		userquizlog.push(secdetail[5]);
+																		redis.rpush("log:"+user+":"+Qid,0,0,secdetail[5]);	
+																		redis.rpush( user+":"+Qid, "^");
+																		res.render("info.ejs",{ title:user, Qid:Qid, secdetail : secdetail});
+																	}
 																}
-															}
-														});
-													}else{
-														redis.lrange("log:"+user+":"+Qid,0,-1,function (err, log){
-															console.log("yep");
-															var id = userquizlog.indexOf(user);
-															var qno = parseInt(log[1]) - 1;
-															if(qno < 0) qno = 0;
-															userquizlog[id + 1] = log[0];
-															userquizlog[id + 2] = qno;
-															userquizlog[id + 4] = log[2];
-															userquizlog[id + 5] = log[2];
-															userquizlog[id + 6] = log[2];
-															console.log("dart");
-															res.redirect(307,'/showquiz?user='+ user + '&Qid=' + Qid + '&opti=###&' + '&time='+userquizlog[id+6]);
-															console.log("dart clurse");
-														});
-													}	
-												}
-											} );
-										}else{
-											res.redirect('/eval?user='+user+'&Qid='+Qid);
+															});
+														}else{
+															redis.lrange("log:"+user+":"+Qid,0,-1,function (err, log){
+																console.log("yep");
+																var id = userquizlog.indexOf(user);
+																var qno = parseInt(log[1]) - 1;
+																if(qno < 0) qno = 0;
+																userquizlog[id + 1] = log[0];
+																userquizlog[id + 2] = qno;
+																userquizlog[id + 4] = log[2];
+																userquizlog[id + 5] = log[2];
+																userquizlog[id + 6] = log[2];
+																console.log("dart");
+																res.redirect(307,'/showquiz?user='+ user + '&Qid=' + Qid + '&opti=###&' + '&time='+userquizlog[id+6]);
+																console.log("dart clurse");
+															});
+														}	
+													}
+												} );
+											}else{
+												res.redirect('/eval?user='+user+'&Qid='+Qid);
+											}
 										}
-									}
-								});
+									});
+								}else{
+									res.render('quiztakinglogin.ejs',{ title : "Wrong Password" });
+								}
 							}else{
-								res.render('quiztakinglogin.ejs',{ title : "Wrong Password" });
+								res.render('quiztakinglogin.ejs',{ title : "Wrong Quiz id" });
 							}
-						}else{
-							res.render('quiztakinglogin.ejs',{ title : "Wrong Quiz id" });
 						}
-					}
-				});			
-			}else{
-				res.send(404);
+					});	
+				}else{
+					res.send(404);
+				}
 			}
-		}
-	});
+		});	
+	}
+	
 });
 
 app.post('/showquiz',function (req, res){
-	var user = req.param('user');
+	var user = req.cookies.uname;
 	console.log(user + " zzzzzzzzzzzzzzzzzzzzzzzooooooooooo");
 	var Qid = req.param('Qid');
 	var idx = userquizlog.indexOf(user);
@@ -1237,7 +1311,6 @@ app.post('/showquiz',function (req, res){
 					});
 				}
 			});
-
 			userquizlog[idx+2] = 0;
 			userquizlog[idx+1]++;
 			redis.lrange("Section:"+Qid+":"+ userquizlog[idx+1],0,7,function (err, secdetail){
@@ -1249,19 +1322,16 @@ app.post('/showquiz',function (req, res){
 					userquizlog[idx + 5] = secdetail[5];
 					userquizlog[idx + 6] = secdetail[5];
 					redis.lset("log:"+user+":"+Qid,0,userquizlog[idx + 1],function (err, rest){
-						if(err){
-
-						}else{
+						if(err){}
+						else{
 							console.log(rest);
 							redis.lset("log:"+user+":"+Qid,1,userquizlog[idx + 2],function (err, rz){
-								if(err){
-
-								}else{
+								if(err){}
+									else{
 									console.log(rz);
 									redis.lset("log:"+user+":"+Qid,2,secdetail[5], function (err, rx){
-										if(err){
-
-										}else{
+										if(err){}
+										else{
 											console.log(rx);
 											console.log(secdetail[5] + " %%%%%%%%%%%%%%%%%%%%%%");
 											console.log(userquizlog[idx+6] + " &&&&&&&&&&&&&&&&&&&&&&");
@@ -1269,15 +1339,11 @@ app.post('/showquiz',function (req, res){
 										}
 									});				
 								}
-
 							});		
 						}
 					});
-					
-					
-								
 				}
-			} );
+			});
 		}else{
 			//quiz end()
 			var ans = req.param('opti');
@@ -1290,9 +1356,8 @@ app.post('/showquiz',function (req, res){
 					data += ans;
 					console.log(data);
 					redis.lrange("Section:"+Qid+":"+secnum,8,-1,function (err, sectiondata){
-						if(err){
-
-						}else{
+						if(err){}
+							else{
 							var point = 0;
 							for( var i = 1 ; i < data.length; i++){
 								if( data[i] == sectiondata[ ((i-1)*10) + 8 ]){
@@ -1312,18 +1377,14 @@ app.post('/showquiz',function (req, res){
 										console.log("refrence count of quiz deleted");
 										Quizdetail.splice(idx1,3);
 									}
-
 									res.redirect('/eval?user='+user+'&Qid='+Qid);
 								}
 							});
-							
 						}
-
 					});
 				}
 			});
 			console.log("point==2");
-			//res.send("DONED");
 		}
 	}
 });
@@ -1359,7 +1420,7 @@ io.sockets.on('connection',function (socket){
                     socket.emit('tell');
                 }
             });
-        });
+    });
 
     socket.on('check-email',function (email){
     	console.log(email);
@@ -1373,12 +1434,7 @@ io.sockets.on('connection',function (socket){
 			}
     	});
     });
-    
-    // socket.on('updateTime',function (taker,time){
-    // 	console.log( taker + ": left : " + time);
-    // 	console.log('Time Left: ' + time );
-    // 	userquizlog[userquizlog.indexOf(taker) + 4] = time;
-    // });
+	
 	socket.on('nofault',function(user){
 		sockuser.splice(sockuser.indexOf(socket),2);
 	});
@@ -1390,7 +1446,8 @@ io.sockets.on('connection',function (socket){
     	userquizlog[idx+2] = Quizdetail[1+id][parseInt(userquizlog[idx+1])+1];
     	socket.emit('end');
     });
-    	socket.on('verify-pass',function (user,pass,newpass){
+
+    socket.on('verify-pass',function (user,pass,newpass){
 		redis.lindex(user,0,function (err, passwd){
 			if(err) console.log("bush")
 			else{
@@ -1414,18 +1471,13 @@ io.sockets.on('connection',function (socket){
 				console.log("disconnected >>>>>>>> "+ user);
 				console.log("dddddddddddddd tttttttttttttttttt is : " + t );
 				userquizlog[id+6] = parseInt(userquizlog[id+6]) - t;
-				//userquizlog[id+6] = parseInt(userquizlog[id+6]) + parseInt(t) - parseInt(userquizlog[id+4]);
 				var y = userquizlog[id+3];
 				redis.lset("log:"+user+":"+y,0,userquizlog[id+1]);
 				redis.lset("log:"+user+":"+y,1,userquizlog[id+2]);
 				redis.lset("log:"+user+":"+y,2,userquizlog[id+6]);
 				sockuser.splice(sockuser.indexOf(socket),2);	
 			}	
-		}
-		
-		
-
-		/* do storing work*/
+		}		
 	});
 });
 

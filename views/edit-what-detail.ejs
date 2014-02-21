@@ -64,6 +64,7 @@
 					      		    <span class="caret"></span>
 					      		  </button>
 					      		  <ul class="dropdown-menu">
+					      		    <li ><a href="/home" ><span class="glyphicon glyphicon-home"></span> Home</a></li>
 					      		    <li ><a href="/cpasswd?user=<%= title %>" ><span class="glyphicon glyphicon-edit"></span> Change Password</a></li>
 					      		    <li><a href="/login"><span class="glyphicon glyphicon-wrench"></span> Change email address</a></li>
 								  </ul>
@@ -143,7 +144,7 @@
 		      		    	<% for( var i = 0 ; i < Qd[8]; i++) {%>
 		      		    		<ul style="margin-top:16px;margin-bottom:48px;color:#fff">
 		      		    			<span class="glyphicon glyphicon-edit" style="color:#fff"></span>
-		      		    			<input type="radio" class="radio" name="rad" value="<%= i%>" onclick="set(this);">
+		      		    			<input type="radio" class="radio" name="rad" value="<%= i%>" onclick="set(this);" required>
 		      		    			
 		      		    			Section:<%= Qd[ i + 9 + parseInt(Qd[8])]%>:Questions:<%= Qd[i+9]%>
 		      		    		</ul>	
