@@ -6,7 +6,8 @@ var io = require('socket.io').listen(server);
 io.enable('browser client minification');  // send minified client
 io.enable('browser client etag');          // apply etag caching logic based on version number
 io.enable('browser client gzip');          // gzip the file
-io.set('log level', 1);                    // reduce logging
+io.set('log level', 1);
+io.set('browser client expires',315360000);                    // reduce logging
 io.set('transports', [                     // enable all transports (optional if you want flashsocket)
     'websocket'
   , 'flashsocket'
@@ -33,7 +34,7 @@ app.engine('html', require('ejs').renderFile);
 app.use(express.bodyParser({ keepExtensions: true,uploadDir: __dirname + '/public/uploads'}));
 app.use(express.cookieParser());
 app.use(app.router);
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 }));
 
 /*        encryption functions  */
 
@@ -628,7 +629,7 @@ app.get('/tour',function (req, res){
 	redis.lrange('Tour',0,10,function (err, tour){
 		if(err){}
 		else{
-
+			
 		}
 	});
 });
