@@ -151,6 +151,7 @@ app.post('/insert-edit-question',function (req, res){
 app.get('/add-question',function (req, res){
 	res.render('addquestion.ejs',{ title:req.cookies.uname, QID : req.cookies.Q});
 });
+
 app.get('/edit-question',function (req, res){
 	var Qid = req.cookies.Q;
 	var Sid = req.cookies.Sid;
